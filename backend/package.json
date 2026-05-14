@@ -1,0 +1,25 @@
+{
+  "name": "wagle-electricals-backend",
+  "version": "1.0.0",
+  "description": "Backend for Wagle Electricals storefront — Damauli, Nepal",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "author": "Wagle & Co.",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "firebase-admin": "^13.9.0",
+    "groq-sdk": "^0.7.0",
+    "multer": "^1.4.5-lts.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

@@ -1,0 +1,2055 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Wagle Electricals — Damauli, Tanahun</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Tiro+Devanagari+Hindi:ital@0;1&family=Noto+Serif+Devanagari:wght@500;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<style>
+:root{
+  /* Cream base */
+  --bg:#f6efd9;          /* page cream */
+  --bg-2:#fbf6e4;        /* card cream */
+  --bg-3:#f0e6c8;        /* deeper cream */
+  --bg-4:#e7dab6;        /* cream border tone */
+  --line:#d9c890;        /* warm line on cream */
+  --line-2:#c2ad6a;      /* stronger warm line */
+  --ink:#0f3527;         /* emerald ink */
+  --ink-2:#1d6048;       /* secondary emerald ink */
+  --mute:#6b7f6c;        /* muted sage */
+  --gold:#d99c1f;        /* shop-sign gold (warm, slightly amber) */
+  --gold-2:#e8b94a;
+  --gold-deep:#a37918;
+  --gold-glow:rgba(217,156,31,.32);
+  --emerald:#0f3527;     /* deep emerald (sign green) */
+  --emerald-2:#164a36;
+  --emerald-3:#1d6048;
+  --jade:#3ec591;
+  --teal:#4cd6c4;
+  --orange:#e89255;
+  --blue:#79b1d6;
+  --red:#c0392b;
+  --radius:14px;
+  --radius-lg:20px;
+  --shadow-1:0 1px 0 rgba(255,255,255,.6) inset, 0 8px 24px rgba(15,53,39,.10);
+  --shadow-2:0 1px 0 rgba(255,255,255,.6) inset, 0 22px 60px rgba(15,53,39,.18);
+  --container:1240px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(217,156,31,.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 30%, rgba(15,53,39,.05), transparent 60%),
+    var(--bg);
+  min-height:100vh;overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+img{max-width:100%;display:block}
+
+/* damask backdrop (subtle) */
+.damask{
+  position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.18;
+  background-image:
+    radial-gradient(circle at 20% 20%, var(--gold-deep) 1.5px, transparent 2px),
+    radial-gradient(circle at 80% 60%, var(--emerald-3) 1.5px, transparent 2px);
+  background-size:120px 120px, 160px 160px;
+}
+.grid-bg{
+  position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:
+    linear-gradient(rgba(15,53,39,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15,53,39,.05) 1px, transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(ellipse at 50% 30%, #000 30%, transparent 80%);
+}
+
+/* Devanagari helper */
+.np{font-family:'Noto Serif Devanagari','Tiro Devanagari Hindi',serif;font-weight:700;letter-spacing:.01em}
+.np-tag{font-family:'Noto Serif Devanagari','Tiro Devanagari Hindi',serif;font-weight:500;color:var(--gold);font-size:.85em}
+
+/* ============ TYPE ============ */
+.serif{font-family:'Cormorant Garamond',serif;font-weight:600;letter-spacing:-.005em}
+.mono{font-family:'JetBrains Mono',monospace}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-deep)}
+
+/* Emerald section band — used to alternate sections cream <-> emerald */
+.section-emerald{
+  background:
+    radial-gradient(800px 400px at 90% -10%, rgba(217,156,31,.08), transparent 60%),
+    linear-gradient(180deg, var(--emerald), var(--emerald-2));
+  color:#f4ead2;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  position:relative;
+}
+.section-emerald::before{
+  content:"";position:absolute;left:0;right:0;top:0;height:1px;
+  background:linear-gradient(90deg, transparent, var(--gold), transparent);opacity:.5;
+}
+.section-emerald .eyebrow{color:var(--gold-2)}
+.section-emerald h2,
+.section-emerald h3{color:#f4ead2}
+.section-emerald p{color:#d8cba6}
+
+/* ============ NAV ============ */
+.nav{
+  position:sticky;top:0;z-index:50;
+  background:linear-gradient(180deg, #0f3527 0%, #164a36 100%);
+  border-bottom:1px solid var(--gold-deep);
+}
+.nav::after{
+  content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;
+  background:linear-gradient(90deg, transparent, var(--gold) 30%, var(--gold) 70%, transparent);
+  opacity:.7;
+  animation:shimmer 8s linear infinite;
+  background-size:200% 100%;
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.nav-inner{max-width:var(--container);margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:32px}
+
+.brand{display:flex;align-items:center;gap:12px}
+.brand-crest{
+  width:40px;height:40px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, var(--gold-2), var(--gold));
+  border:1px solid var(--gold-deep);
+  display:grid;place-items:center;color:#0f3527;
+  box-shadow:0 0 0 1px rgba(230,183,87,.18), 0 0 18px rgba(230,183,87,.32);
+  position:relative;
+}
+.brand-crest svg{width:20px;height:20px}
+.brand-name{display:block;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:22px;letter-spacing:.01em;color:var(--gold);line-height:1}
+.brand-name .amp{color:var(--gold);font-style:italic;font-weight:500}
+.brand-name .np{display:block;font-family:'Noto Serif Devanagari',serif;font-size:14px;font-weight:700;color:var(--gold-2);letter-spacing:.02em;margin-bottom:3px;line-height:1.1}
+.brand-sub{display:block;font-size:9px;letter-spacing:.32em;color:#9ab19d;font-family:'JetBrains Mono',monospace;text-transform:uppercase;margin-top:4px}
+
+.nav-links{display:flex;gap:6px;margin-left:auto;align-items:center}
+.nav-link{
+  position:relative;padding:8px 14px;border-radius:10px;font-size:13.5px;font-weight:500;color:#d8cba6;
+  display:inline-flex;align-items:center;gap:8px;transition:.2s;letter-spacing:.01em;
+}
+.nav-link:hover{color:#f4ead2;background:rgba(255,255,255,.05)}
+.nav-link.active{color:#f4ead2;background:rgba(255,255,255,.06)}
+.nav-link.active::before{
+  content:"";position:absolute;left:14px;right:14px;bottom:2px;height:2px;
+  background:var(--gold);box-shadow:0 0 10px var(--gold-glow);border-radius:2px;
+}
+.cart-badge{
+  display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;
+  border-radius:10px;background:var(--gold);color:#231600;font-size:11px;font-weight:700;
+  font-family:'JetBrains Mono',monospace;
+}
+.nav-cta{
+  margin-left:8px;padding:9px 18px;border-radius:999px;font-size:13px;
+  background:linear-gradient(180deg, var(--gold-2), var(--gold));color:#231600;font-weight:700;letter-spacing:.02em;
+  border:1px solid var(--gold-deep);
+  box-shadow:0 1px 0 rgba(255,255,255,.3) inset, 0 0 0 0 rgba(230,183,87,0);
+  transition:.2s;
+}
+.nav-cta:hover{box-shadow:0 1px 0 rgba(255,255,255,.4) inset, 0 0 0 4px rgba(230,183,87,.18), 0 0 24px var(--gold-glow);transform:translateY(-1px)}
+
+.hamburger{display:none;margin-left:auto;width:40px;height:40px;border-radius:10px;border:1px solid var(--gold-deep);align-items:center;justify-content:center}
+.hamburger span{display:block;width:18px;height:2px;background:var(--gold);position:relative}
+.hamburger span::before,.hamburger span::after{content:"";position:absolute;left:0;width:18px;height:2px;background:var(--gold)}
+.hamburger span::before{top:-6px}.hamburger span::after{top:6px}
+
+/* ============ LAYOUT ============ */
+.container{max-width:var(--container);margin:0 auto;padding:0 24px;position:relative;z-index:1}
+.view{display:none;animation:fadeUp .4s ease both}
+.view.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ============ HERO ============ */
+.hero{
+  position:relative;padding:90px 0 80px;overflow:hidden;
+  border-bottom:1px solid var(--line);
+}
+.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:64px;align-items:center}
+.hero h1{
+  font-family:'Cormorant Garamond',serif;font-weight:600;font-size:clamp(54px,7.4vw,100px);
+  line-height:.95;letter-spacing:-.01em;margin:14px 0 24px;color:var(--ink);
+}
+.hero h1 .gold{color:var(--gold);font-style:italic;font-weight:500;background:none;-webkit-text-fill-color:var(--gold);text-shadow:0 1px 0 rgba(255,255,255,.3)}
+.hero h1 em{font-style:italic;font-weight:500;color:var(--ink-2)}
+.hero h1 .np-line{display:block;font-family:'Noto Serif Devanagari',serif;font-weight:700;font-size:.42em;color:var(--gold);letter-spacing:.02em;margin-bottom:.18em;line-height:1.1}
+.hero p.lede{font-size:17px;color:var(--ink-2);max-width:540px;line-height:1.65;margin:0 0 28px}
+.hero-ctas{display:flex;gap:12px;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:10px;padding:14px 22px;border-radius:999px;
+  font-weight:600;font-size:13.5px;letter-spacing:.04em;transition:.2s;cursor:pointer;
+  border:1px solid transparent;text-transform:uppercase;
+}
+.btn-primary{background:linear-gradient(180deg, var(--gold-2), var(--gold));color:#231600;border-color:var(--gold-deep);box-shadow:0 1px 0 rgba(255,255,255,.3) inset}
+.btn-primary:hover{box-shadow:0 1px 0 rgba(255,255,255,.4) inset, 0 0 0 4px rgba(230,183,87,.2), 0 8px 28px var(--gold-glow);transform:translateY(-1px)}
+.btn-ghost{background:transparent;border-color:var(--line-2);color:var(--ink)}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+.btn-emerald{background:var(--emerald);color:#eafff3;border-color:var(--emerald-2)}
+.btn-emerald:hover{background:var(--emerald-2);box-shadow:0 0 0 4px rgba(38,152,106,.2)}
+.btn-block{width:100%;justify-content:center}
+
+.hero-meta{display:flex;gap:32px;margin-top:36px;padding-top:28px;border-top:1px solid var(--line)}
+.hero-meta div{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute)}
+.hero-meta strong{display:block;font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--ink);letter-spacing:0;text-transform:none;font-weight:600;margin-top:4px}
+
+/* hero visual — shop photo */
+.hero-vis{
+  position:relative;aspect-ratio:4/3;border-radius:24px;
+  background:var(--emerald);
+  border:1px solid var(--gold-deep);
+  overflow:hidden;box-shadow:var(--shadow-2);
+}
+.hero-vis img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;
+}
+.hero-vis::before{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg, transparent 55%, rgba(15,53,39,.75) 100%);
+  z-index:1;pointer-events:none;
+}
+.hero-vis .corner{position:absolute;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;z-index:2}
+.hero-vis .c-tl{top:20px;left:24px;color:rgba(255,255,255,.55)}
+.hero-vis .c-tr{top:20px;right:24px;color:var(--gold)}
+.hero-vis .c-bl{bottom:20px;left:24px;color:rgba(255,255,255,.7)}
+.hero-vis .c-br{bottom:20px;right:24px;color:rgba(255,255,255,.55)}
+
+/* ============ SECTION ============ */
+.section{padding:90px 0;position:relative}
+.section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:32px;margin-bottom:44px;flex-wrap:wrap}
+.section-head h2{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:clamp(38px,4.8vw,58px);line-height:1;margin:8px 0 0;letter-spacing:-.005em;color:var(--ink)}
+.section-head h2 .gold{color:var(--gold);font-style:italic;font-weight:500}
+.section-head h2 .np{display:block;font-family:'Noto Serif Devanagari',serif;font-weight:500;font-size:.55em;color:var(--gold);margin-bottom:.18em;letter-spacing:.02em}
+.section-head p{color:var(--ink-2);max-width:420px;margin:0;line-height:1.6}
+
+/* category grid */
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.cat{
+  position:relative;padding:28px;border-radius:var(--radius);background:var(--bg-2);
+  border:1px solid var(--line);transition:.25s;cursor:pointer;overflow:hidden;
+}
+.cat::after{
+  content:"";position:absolute;inset:auto 0 0 0;height:2px;
+  background:linear-gradient(90deg, transparent, var(--gold), transparent);
+  transform:scaleX(0);transform-origin:left;transition:.4s;
+}
+.cat:hover{border-color:var(--gold);transform:translateY(-3px);background:#fff8df;box-shadow:0 12px 32px rgba(15,53,39,.14)}
+.cat:hover::after{transform:scaleX(1)}
+.cat:hover .cat-icon{color:var(--emerald);background:var(--gold-2);border-color:var(--gold-deep);box-shadow:0 0 24px rgba(217,156,31,.35)}
+.cat-icon{
+  width:56px;height:56px;border-radius:14px;background:var(--emerald);
+  display:grid;place-items:center;color:var(--gold);
+  border:1px solid var(--emerald-2);transition:.25s;margin-bottom:18px;
+}
+.cat-icon svg{width:26px;height:26px}
+.cat h3{font-family:'Cormorant Garamond',serif;font-size:22px;margin:0 0 4px;font-weight:600;color:var(--ink)}
+.cat h3 .np{display:block;font-family:'Noto Serif Devanagari',serif;font-size:13px;font-weight:500;color:var(--gold-deep);margin-top:2px;letter-spacing:.01em}
+.cat-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mute);letter-spacing:.1em;margin-top:6px}
+.cat-num{position:absolute;top:18px;right:20px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold-deep);letter-spacing:.18em}
+
+/* feature card (estimate scanner home strip) */
+.feature-banner{
+  margin-top:24px;padding:36px;border-radius:24px;
+  background:
+    radial-gradient(circle at 90% 0%, rgba(230,183,87,.18), transparent 50%),
+    linear-gradient(135deg, #1d6048 0%, #164a36 100%);
+  border:1px solid var(--gold-deep);
+  display:grid;grid-template-columns:1fr auto;gap:30px;align-items:center;position:relative;overflow:hidden;
+}
+.feature-banner::before{content:"";position:absolute;inset:14px;border-radius:18px;border:1px solid rgba(230,183,87,.2);pointer-events:none}
+.feature-banner h3{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:600;margin:8px 0 10px;line-height:1.1}
+.feature-banner h3 .gold{color:var(--gold);font-style:italic;font-weight:500}
+.feature-banner p{color:var(--ink-2);max-width:560px;margin:0 0 4px;line-height:1.6;font-size:15px}
+
+/* why us */
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.why{padding:34px;border-radius:var(--radius-lg);background:linear-gradient(180deg, var(--bg-2), var(--bg-3));border:1px solid var(--line);position:relative;overflow:hidden}
+.why::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg, transparent, var(--gold), transparent);opacity:.5}
+.why-num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold);letter-spacing:.2em}
+.why h3{font-family:'Cormorant Garamond',serif;font-size:28px;margin:14px 0 10px;font-weight:600;line-height:1.1}
+.why p{color:var(--ink-2);line-height:1.65;margin:0;font-size:14px}
+
+/* location */
+.loc-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:stretch}
+.loc-info{padding:38px;border-radius:var(--radius-lg);background:var(--bg-2);border:1px solid var(--line)}
+.loc-info h3{font-family:'Cormorant Garamond',serif;font-size:38px;margin:8px 0 22px;line-height:1;font-weight:600}
+.loc-row{display:flex;gap:14px;padding:18px 0;border-top:1px solid var(--line)}
+.loc-row:first-of-type{border-top:0;padding-top:8px}
+.loc-row .lab{flex:0 0 110px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mute);letter-spacing:.16em;text-transform:uppercase;padding-top:2px}
+.loc-row .val{font-size:15px;color:var(--ink)}
+.loc-row .val a{color:var(--gold)}
+.loc-map{border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--line);min-height:380px;background:var(--bg-2)}
+#homeMap{height:100%;min-height:380px;width:100%}
+
+/* ============ PRODUCTS ============ */
+.products-head{padding:60px 0 24px;border-bottom:1px solid var(--line)}
+.products-head h1{font-family:'Cormorant Garamond',serif;font-size:clamp(46px,5.4vw,72px);margin:8px 0 14px;line-height:1;font-weight:600}
+.products-head h1 em{color:var(--gold);font-weight:500}
+.products-head p{color:var(--ink-2);max-width:560px;margin:0;line-height:1.6}
+
+.product-toolbar{position:sticky;top:65px;z-index:5;background:rgba(246,239,217,.92);backdrop-filter:blur(10px);padding:18px 0;border-bottom:1px solid var(--line)}
+.product-toolbar-inner{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.search{flex:1;min-width:240px;display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--bg-2);border:1px solid var(--line);border-radius:12px;transition:.2s}
+.search:focus-within{border-color:var(--gold);box-shadow:0 0 0 3px rgba(230,183,87,.15)}
+.search svg{width:16px;height:16px;color:var(--mute)}
+.search input{flex:1;background:none;border:0;color:var(--ink);outline:none;font:inherit;font-size:14px}
+
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:2px 0;max-width:100%;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{white-space:nowrap;padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:var(--bg-2);font-size:12px;color:var(--ink-2);transition:.2s;font-weight:500;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;text-transform:uppercase}
+.tab:hover{border-color:var(--line-2);color:var(--ink)}
+.tab.active{background:var(--emerald);color:var(--gold);border-color:var(--gold-deep);font-weight:700}
+
+.product-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;padding:32px 0 60px}
+.product{position:relative;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;transition:.2s;display:flex;flex-direction:column}
+.product:hover{border-color:var(--gold-deep);transform:translateY(-3px);box-shadow:var(--shadow-1)}
+.product:hover .product-img{background-position:100% 100%}
+.product:hover .add{background:var(--gold);color:#231600;border-color:var(--gold-deep)}
+
+.product-img{aspect-ratio:1.1/1;position:relative;overflow:hidden;background:repeating-linear-gradient(45deg, rgba(15,53,39,.04) 0 8px, transparent 8px 16px),linear-gradient(135deg, var(--emerald-3), var(--emerald));background-size:200% 200%;background-position:0 0;transition:1.2s;border-bottom:1px solid var(--line)}
+.product-img .glyph{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:42%;color:var(--gold);opacity:.95;filter:drop-shadow(0 4px 14px rgba(0,0,0,.3))}
+.stock{position:absolute;top:12px;left:12px;padding:5px 9px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;font-weight:600}
+.stock.in{background:rgba(62,197,145,.14);color:var(--jade);border:1px solid rgba(62,197,145,.3)}
+.stock.low{background:rgba(232,146,85,.14);color:var(--orange);border:1px solid rgba(232,146,85,.3)}
+
+.product-body{padding:16px 16px 18px;display:flex;flex-direction:column;gap:6px;flex:1}
+.product-brand{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;color:var(--mute);text-transform:uppercase}
+.product-name{font-family:'Cormorant Garamond',serif;font-size:20px;line-height:1.15;margin:0;font-weight:600;color:var(--ink)}
+.product-name .np{display:block;font-family:'Noto Serif Devanagari',serif;font-size:13px;font-weight:500;color:var(--gold-deep);margin-top:2px;letter-spacing:.01em}
+.product-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:14px}
+.price-note{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);padding:5px 10px;border-radius:999px;background:var(--bg-3);border:1px solid var(--line)}
+.add{padding:9px 14px;border-radius:999px;background:var(--emerald);border:1px solid var(--emerald-2);color:#f4ead2;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;transition:.2s;font-family:'JetBrains Mono',monospace}
+/* Division filter */
+.div-filter{display:flex;gap:6px;flex-wrap:wrap;padding:0 0 6px}
+.div-btn{padding:7px 16px;border-radius:999px;border:1px solid var(--line-2);background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;color:var(--mute);cursor:pointer;transition:.2s}
+.div-btn:hover{border-color:var(--gold);color:var(--gold)}
+.div-btn.active{background:var(--emerald);border-color:var(--emerald-2);color:var(--gold-2)}
+/* Quotation banner (products page) */
+.quotation-banner{display:flex;align-items:flex-start;gap:10px;background:rgba(217,156,31,.10);border:1px solid var(--gold-deep);border-radius:10px;padding:12px 18px;margin:14px auto;font-size:13px;color:var(--gold-deep);line-height:1.5}
+.quotation-banner svg{flex-shrink:0;margin-top:2px;color:var(--gold-deep)}
+/* Quotation notice (in cart sidebar) */
+.quotation-notice{background:rgba(217,156,31,.09);border:1px solid var(--line-2);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--ink-2);line-height:1.6;margin:14px 0;display:flex;flex-direction:column;gap:4px}
+.quotation-notice svg{color:var(--gold-deep);flex-shrink:0}
+/* Cart division tag */
+.ci-div-tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin-top:3px}
+.empty{padding:80px 24px;text-align:center;color:var(--mute)}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--bg-2);border:1px solid var(--gold);color:var(--ink);padding:12px 18px;border-radius:999px;display:flex;align-items:center;gap:10px;font-size:14px;z-index:200;pointer-events:none;transition:.3s;box-shadow:0 12px 40px rgba(0,0,0,.6), 0 0 0 4px rgba(230,183,87,.1)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold)}
+
+/* ============ CART ============ */
+.cart-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:28px;align-items:start;padding:48px 0 80px}
+.cart-list{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden}
+.cart-item{display:grid;grid-template-columns:88px 1fr auto;gap:18px;align-items:center;padding:18px;border-bottom:1px solid var(--line)}
+.cart-item:last-child{border-bottom:0}
+.ci-img{width:88px;height:88px;border-radius:12px;background:linear-gradient(135deg, var(--emerald-3), var(--emerald));border:1px solid var(--gold-deep);position:relative;overflow:hidden}
+.ci-img svg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:48%;color:var(--gold);opacity:.8}
+.ci-meta .ci-name{font-family:'Cormorant Garamond',serif;font-size:20px;margin:0;font-weight:600}
+.ci-meta .ci-price{color:var(--mute);font-size:13px;margin-top:3px;font-family:'JetBrains Mono',monospace}
+.ci-side{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.qty{display:inline-flex;align-items:center;background:var(--bg-3);border:1px solid var(--line-2);border-radius:999px;overflow:hidden}
+.qty button{width:32px;height:32px;color:var(--ink);font-size:14px;transition:.15s}
+.qty button:hover{background:var(--line)}
+.qty span{min-width:34px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:13px}
+.ci-sub{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold-deep);font-weight:700}
+.ci-rm{color:var(--mute);font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase}
+.ci-rm:hover{color:var(--red)}
+
+.cart-empty{padding:80px 24px;text-align:center;color:var(--mute);background:var(--bg-2);border:1px dashed var(--line-2);border-radius:var(--radius-lg)}
+.cart-empty .serif{font-size:32px;color:var(--ink);margin:14px 0 8px}
+
+.summary{position:sticky;top:88px;padding:28px;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius-lg)}
+.summary h3{font-family:'Cormorant Garamond',serif;font-size:26px;margin:0 0 18px;font-weight:600}
+.sum-row{display:flex;justify-content:space-between;padding:10px 0;font-size:14px;color:var(--ink-2)}
+.sum-row.total{padding-top:16px;border-top:1px solid var(--line);margin-top:8px;font-size:18px;color:var(--ink);font-family:'Cormorant Garamond',serif}
+.sum-row.total .amt{color:var(--gold-deep);font-size:28px;font-weight:700}
+
+.toggle-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:var(--bg-3);border:1px solid var(--line-2);border-radius:999px;padding:4px;margin:18px 0}
+.toggle-row button{padding:11px 10px;border-radius:999px;font-size:11px;color:var(--ink-2);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-family:'JetBrains Mono',monospace}
+.toggle-row button.active{background:var(--emerald);color:var(--gold)}
+
+.field{display:block;margin-bottom:10px}
+.field label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;color:var(--mute);text-transform:uppercase;margin-bottom:6px}
+.field input,.field textarea{width:100%;padding:11px 14px;background:var(--bg-3);border:1px solid var(--line-2);border-radius:10px;color:var(--ink);font:inherit;font-size:14px;outline:none;transition:.2s;font-family:inherit}
+.field input:focus,.field textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(230,183,87,.15)}
+.note{font-size:12.5px;color:var(--mute);line-height:1.6;margin:14px 0 18px;padding:14px;background:var(--bg-3);border-left:2px solid var(--gold);border-radius:6px}
+
+/* whatsapp btn */
+.btn-whatsapp{background:#25d366;color:#062d1a;border-color:#1fa455}
+.btn-whatsapp:hover{box-shadow:0 0 0 4px rgba(37,211,102,.2)}
+
+/* ============ TRACK ============ */
+.track-head{padding:48px 0 24px;border-bottom:1px solid var(--line)}
+.order-card{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;padding:26px;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius-lg);margin-top:32px}
+.order-card .col label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--mute);letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px}
+.order-card .col .val{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--ink);font-weight:600}
+.order-card .col .val.gold{color:var(--gold-deep)}
+
+.stepper{padding:48px 0 32px;display:grid;grid-template-columns:repeat(6,1fr);gap:12px;position:relative}
+.stepper::before{content:"";position:absolute;top:32px;left:6%;right:6%;height:2px;background:var(--line);z-index:0}
+.stepper .progress{position:absolute;top:32px;left:6%;height:2px;background:linear-gradient(90deg, var(--gold-deep), var(--gold));box-shadow:0 0 12px var(--gold-glow);transition:width .8s cubic-bezier(.6,.1,.3,1);z-index:1}
+.step{position:relative;text-align:center;z-index:2}
+.step .dot{width:64px;height:64px;border-radius:50%;margin:0 auto;display:grid;place-items:center;background:var(--bg-2);border:2px solid var(--line-2);transition:.4s;font-size:24px}
+.step.done .dot{border-color:var(--jade);background:rgba(62,197,145,.1);color:var(--jade)}
+.step.active .dot{border-color:var(--gold);background:#fff8df;color:var(--gold-deep);box-shadow:0 0 0 4px rgba(217,156,31,.2), 0 0 30px var(--gold-glow);animation:pulseRing 2.4s ease-in-out infinite}
+@keyframes pulseRing{0%,100%{box-shadow:0 0 0 4px rgba(230,183,87,.18), 0 0 22px var(--gold-glow)}50%{box-shadow:0 0 0 8px rgba(230,183,87,.08), 0 0 38px var(--gold-glow)}}
+.step .label{margin-top:16px;font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--mute);font-weight:600}
+.step.done .label{color:var(--ink-2)}
+.step.active .label{color:var(--gold-deep)}
+.step .stage-num{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--mute);letter-spacing:.16em;display:block;margin-top:4px}
+
+.stage-panel{margin-top:24px;padding:34px;border-radius:var(--radius-lg);background:linear-gradient(180deg, var(--bg-2), var(--bg-3));border:1px solid var(--line);position:relative;overflow:hidden}
+.stage-panel::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold);box-shadow:0 0 16px var(--gold-glow)}
+.stage-panel .eyebrow{margin-bottom:8px;display:block}
+.stage-panel h2{font-family:'Cormorant Garamond',serif;font-size:38px;margin:0 0 14px;font-weight:600;line-height:1.05}
+.stage-panel p{color:var(--ink-2);line-height:1.6;font-size:15px;max-width:680px}
+.stage-actions{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap;align-items:center}
+#trackMap{margin-top:20px;height:340px;border-radius:14px;border:1px solid var(--line-2);overflow:hidden;background:var(--bg-3)}
+
+.dev-panel{position:fixed;right:18px;bottom:18px;z-index:80;background:var(--bg-2);border:1px solid var(--line-2);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow-2);font-family:'JetBrains Mono',monospace;font-size:11px}
+.dev-toggle{position:fixed;right:18px;bottom:18px;z-index:80;width:44px;height:44px;border-radius:22px;background:var(--bg-2);border:1px solid var(--gold-deep);color:var(--gold);display:grid;place-items:center;box-shadow:var(--shadow-2)}
+.dev-panel.hide{display:none}
+.dev-panel header{font-size:10px;color:var(--mute);letter-spacing:.16em;padding:4px 8px}
+.dev-panel button{padding:6px 12px;border-radius:8px;background:var(--bg-3);text-align:left;border:1px solid var(--line)}
+.dev-panel button:hover{border-color:var(--gold);color:var(--gold)}
+.dev-panel .x{position:absolute;top:6px;right:6px;width:20px;height:20px;border-radius:6px;color:var(--mute)}
+
+/* placed overlay */
+.placed-overlay{position:fixed;inset:0;background:rgba(15,53,39,.88);backdrop-filter:blur(8px);z-index:100;display:none;align-items:center;justify-content:center;animation:fade .3s both}
+.placed-overlay.show{display:flex}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.placed-card{background:var(--bg-2);border:1px solid var(--gold);border-radius:var(--radius-lg);padding:48px;text-align:center;max-width:480px;box-shadow:0 30px 80px rgba(0,0,0,.6), 0 0 0 6px rgba(230,183,87,.08)}
+.placed-card .check{width:72px;height:72px;border-radius:50%;background:rgba(62,197,145,.12);border:2px solid var(--jade);display:grid;place-items:center;margin:0 auto 20px;color:var(--jade)}
+.placed-card h3{font-family:'Cormorant Garamond',serif;font-size:34px;margin:0 0 8px;font-weight:600}
+.placed-card p{color:var(--ink-2);font-size:14.5px;line-height:1.6;margin:0 0 20px}
+.placed-card .id{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--gold);background:var(--bg-3);padding:10px 14px;border-radius:8px;display:inline-block;margin-bottom:20px;letter-spacing:.1em}
+
+/* ============ SCAN ============ */
+.scan-head{padding:60px 0 30px;border-bottom:1px solid var(--line)}
+.scan-head h1{font-family:'Cormorant Garamond',serif;font-size:clamp(48px,5.6vw,76px);margin:8px 0 14px;font-weight:600;line-height:1}
+.scan-head h1 em{color:var(--gold);font-weight:500}
+.scan-head p{color:var(--ink-2);max-width:600px;margin:0;line-height:1.65}
+
+.scan-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;padding:40px 0 80px;align-items:start}
+.scan-uploader{
+  position:relative;border-radius:var(--radius-lg);border:1.5px dashed var(--line-2);
+  background:linear-gradient(180deg, var(--bg-2), var(--bg-3));
+  padding:56px 28px;text-align:center;transition:.25s;min-height:340px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;cursor:pointer;
+}
+.scan-uploader.drag,.scan-uploader:hover{border-color:var(--gold);background:#fff8df;box-shadow:0 0 0 4px rgba(217,156,31,.12)}
+.scan-uploader .icon-ring{
+  width:84px;height:84px;border-radius:50%;border:1px solid var(--gold-deep);
+  display:grid;place-items:center;color:var(--gold);
+  background:radial-gradient(circle at 30% 25%, rgba(230,183,87,.18), transparent 60%), var(--bg-3);
+}
+.scan-uploader h3{font-family:'Cormorant Garamond',serif;font-size:30px;margin:0;font-weight:600;line-height:1.1}
+.scan-uploader p{color:var(--ink-2);margin:0;max-width:360px;line-height:1.55}
+.scan-uploader .or{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--mute);letter-spacing:.2em}
+.scan-uploader input[type=file]{display:none}
+.scan-uploader .preview{
+  position:absolute;inset:14px;border-radius:14px;background:var(--bg-3);overflow:hidden;display:none;align-items:center;justify-content:center;
+}
+.scan-uploader.has-img .preview{display:flex}
+.scan-uploader.has-img > *:not(.preview){display:none}
+.scan-uploader .preview img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}
+.scan-uploader .preview .ovl{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg, transparent 60%, rgba(15,53,39,.85))}
+.scan-uploader .preview .scanline{
+  position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg, transparent, var(--gold), transparent);
+  box-shadow:0 0 18px var(--gold-glow);animation:scan 2.6s ease-in-out infinite;
+}
+@keyframes scan{0%{top:6%}50%{top:94%}100%{top:6%}}
+.scan-uploader .preview .badge{
+  position:absolute;top:14px;left:14px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;color:var(--gold);
+  background:rgba(15,53,39,.85);padding:6px 10px;border-radius:6px;border:1px solid var(--gold-deep);text-transform:uppercase;
+}
+
+.scan-tools{
+  border-radius:var(--radius-lg);background:var(--bg-2);border:1px solid var(--line);
+  padding:28px;display:flex;flex-direction:column;gap:18px;
+}
+.scan-tools h3{font-family:'Cormorant Garamond',serif;font-size:26px;margin:0;font-weight:600}
+.scan-tools .step-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:14px}
+.scan-tools .step-list li{display:flex;gap:14px;align-items:flex-start}
+.scan-tools .step-list .num{flex:0 0 28px;width:28px;height:28px;border-radius:50%;background:var(--bg-3);border:1px solid var(--line-2);display:grid;place-items:center;color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600}
+.scan-tools .step-list strong{display:block;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;margin-bottom:2px}
+.scan-tools .step-list p{margin:0;color:var(--ink-2);font-size:13.5px;line-height:1.55}
+
+.scan-paste{padding-top:18px;border-top:1px solid var(--line)}
+.scan-paste label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;color:var(--mute);text-transform:uppercase;margin-bottom:8px}
+.scan-paste textarea{width:100%;min-height:90px;padding:12px 14px;background:var(--bg-3);border:1px solid var(--line-2);border-radius:10px;color:var(--ink);font:inherit;font-size:13.5px;outline:none;resize:vertical;font-family:'JetBrains Mono',monospace}
+.scan-paste textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(230,183,87,.15)}
+
+.scan-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+
+/* parse results */
+.parse-section{padding:0 0 60px}
+.parse-card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:24px}
+.parse-head{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--line);gap:14px;flex-wrap:wrap}
+.parse-head h3{font-family:'Cormorant Garamond',serif;font-size:22px;margin:0;font-weight:600}
+.parse-head .meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mute);letter-spacing:.12em}
+.parse-list{display:flex;flex-direction:column}
+.parse-row{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:14px;align-items:center;padding:14px 24px;border-bottom:1px solid var(--line)}
+.parse-row:last-child{border-bottom:0}
+.parse-status{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:13px}
+.parse-status.match{background:rgba(62,197,145,.14);color:var(--jade);border:1px solid rgba(62,197,145,.3)}
+.parse-status.ambig{background:rgba(232,146,85,.14);color:var(--orange);border:1px solid rgba(232,146,85,.3);cursor:pointer}
+.parse-status.miss{background:rgba(217,104,104,.14);color:var(--red);border:1px solid rgba(217,104,104,.3)}
+.parse-line{display:flex;flex-direction:column;gap:3px}
+.parse-line .raw{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--mute);letter-spacing:.04em}
+.parse-line .matched{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600}
+.parse-line .matched .brand{color:var(--mute);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;margin-left:8px;font-weight:500}
+.parse-row .qty-input{width:54px;padding:7px 10px;background:var(--bg-3);border:1px solid var(--line-2);border-radius:8px;color:var(--ink);font:inherit;font-size:13px;text-align:center;font-family:'JetBrains Mono',monospace}
+.parse-row .ppr{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);font-weight:600;min-width:90px;text-align:right}
+.parse-row .clarify{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--orange);padding:6px 10px;border-radius:6px;border:1px solid rgba(232,146,85,.3)}
+.parse-row .clarify:hover{background:rgba(232,146,85,.1)}
+
+.parse-foot{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-top:1px solid var(--line);gap:14px;flex-wrap:wrap;background:var(--bg-3)}
+.parse-total{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600}
+.parse-total span{color:var(--gold)}
+
+/* clarify modal */
+.modal{position:fixed;inset:0;background:rgba(15,53,39,.85);backdrop-filter:blur(8px);z-index:90;display:none;align-items:center;justify-content:center;padding:20px}
+.modal.show{display:flex;animation:fade .25s both}
+.modal-card{background:var(--bg-2);border:1px solid var(--gold-deep);border-radius:var(--radius-lg);width:min(560px,100%);max-height:90vh;overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.modal-head{padding:24px 26px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.modal-head h3{font-family:'Cormorant Garamond',serif;font-size:26px;margin:0 0 4px;font-weight:600}
+.modal-head p{margin:0;color:var(--ink-2);font-size:14px;line-height:1.5}
+.modal-head .x{width:32px;height:32px;border-radius:8px;background:var(--bg-3);border:1px solid var(--line-2);color:var(--ink-2);display:grid;place-items:center;flex:0 0 32px}
+.modal-body{padding:8px 14px}
+.suggestion{display:flex;gap:14px;align-items:center;padding:14px;border-radius:12px;border:1px solid transparent;cursor:pointer;transition:.2s}
+.suggestion:hover{background:var(--bg-3);border-color:var(--line)}
+.suggestion.selected{background:rgba(230,183,87,.08);border-color:var(--gold)}
+.sg-img{width:54px;height:54px;border-radius:10px;background:var(--bg-3);border:1px solid var(--line-2);display:grid;place-items:center;color:var(--gold)}
+.sg-img svg{width:24px;height:24px}
+.sg-meta{flex:1}
+.sg-meta .nm{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600}
+.sg-meta .br{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mute);letter-spacing:.12em;text-transform:uppercase}
+.sg-pr{font-family:'Cormorant Garamond',serif;color:var(--gold);font-size:18px;font-weight:600}
+.modal-foot{padding:18px 26px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.modal-foot .skip{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mute);letter-spacing:.14em;text-transform:uppercase}
+.modal-foot .skip:hover{color:var(--red)}
+
+/* ============ ABOUT ============ */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.about-text h2{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:600;color:#fff;margin:12px 0 20px;line-height:1.15}
+.about-lead{font-size:1.05em;line-height:1.7;color:#d8cba6;margin-bottom:16px}
+.about-text p{line-height:1.7;color:#9ab19d;margin-bottom:14px}
+.about-stats{display:flex;gap:32px;margin-top:32px;padding-top:28px;border-top:1px solid rgba(217,156,31,.25)}
+.about-stat-num{font-family:'Cormorant Garamond',serif;font-size:2.4em;font-weight:700;color:var(--gold);line-height:1}
+.about-stat-lab{font-size:12px;color:#9ab19d;margin-top:4px;line-height:1.5}
+.about-card{background:rgba(255,255,255,.05);border:1px solid rgba(217,156,31,.22);border-radius:var(--radius-lg);padding:40px 32px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:28px}
+.about-emblem{display:flex;flex-direction:column;align-items:center;gap:14px}
+.about-bolt{width:60px;height:60px;background:linear-gradient(135deg,var(--gold),var(--gold-deep));border-radius:16px;display:grid;place-items:center;box-shadow:0 6px 24px rgba(217,156,31,.4)}
+.about-bolt svg{width:30px;height:30px;color:#fff}
+.about-proprietor{border:1px solid rgba(217,156,31,.25);border-radius:var(--radius);padding:20px 24px;width:100%}
+.prop-label{font-size:10px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;margin-bottom:10px}
+.prop-np{font-family:'Noto Serif Devanagari',serif;font-size:1.3em;color:#fff;margin-bottom:4px;font-weight:700}
+.prop-en{font-family:'Cormorant Garamond',serif;font-size:1.1em;color:#d8cba6;margin-bottom:8px;font-style:italic}
+.prop-title{font-size:12px;color:#9ab19d;line-height:1.6}
+.about-tagline{font-family:'Noto Serif Devanagari',serif;font-size:.9em;color:var(--gold);opacity:.75;border-top:1px solid rgba(217,156,31,.2);padding-top:20px;width:100%;font-style:italic}
+@media(max-width:1080px){.about-grid{grid-template-columns:1fr}}
+
+/* ============ FOOTER ============ */
+.footer{border-top:1px solid var(--gold-deep);padding:60px 0 28px;margin-top:60px;background:linear-gradient(180deg, var(--emerald), var(--emerald-2));color:#d8cba6;position:relative}
+.footer::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg, transparent, var(--gold) 50%, transparent);opacity:.6}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px}
+.footer-brand p{color:#9ab19d;line-height:1.65;font-size:14px;margin:14px 0 20px;max-width:340px}
+.footer h4{font-family:'Cormorant Garamond',serif;font-size:18px;margin:0 0 16px;font-weight:600;color:var(--gold)}
+.footer ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
+.footer ul a,.footer ul li{color:#d8cba6;font-size:14px}
+.footer ul a:hover{color:var(--gold)}
+.foot-bottom{padding-top:24px;border-top:1px solid rgba(217,156,31,.25);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#9ab19d;letter-spacing:.1em;text-transform:uppercase}
+.foot-bottom .heart{color:var(--gold)}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 1080px){
+  .hero-grid{grid-template-columns:1fr;gap:40px}
+  .hero-vis{max-width:520px}
+  .cat-grid{grid-template-columns:repeat(3,1fr)}
+  .product-grid{grid-template-columns:repeat(3,1fr)}
+  .why-grid{grid-template-columns:1fr;gap:14px}
+  .loc-grid{grid-template-columns:1fr}
+  .cart-grid{grid-template-columns:1fr}
+  .summary{position:static}
+  .footer-grid{grid-template-columns:1fr 1fr;gap:32px}
+  .order-card{grid-template-columns:repeat(2,1fr)}
+  .scan-grid{grid-template-columns:1fr}
+  .feature-banner{grid-template-columns:1fr}
+}
+@media (max-width: 720px){
+  .nav-links{display:none}
+  .hamburger{display:flex}
+  .nav-links.open{display:flex;position:absolute;top:100%;left:0;right:0;flex-direction:column;background:var(--bg-2);padding:14px;gap:6px;border-bottom:1px solid var(--line)}
+  .section{padding:60px 0}
+  .hero{padding:60px 0}
+  .cat-grid{grid-template-columns:repeat(2,1fr)}
+  .product-grid{grid-template-columns:repeat(2,1fr)}
+  .stepper{grid-template-columns:repeat(6, 64px);overflow-x:auto;gap:18px;padding:30px 12px}
+  .stepper::before{left:30px;right:30px}
+  .footer-grid{grid-template-columns:1fr}
+  .order-card{grid-template-columns:1fr 1fr}
+  .hero-meta{flex-wrap:wrap;gap:18px}
+  .product-toolbar{position:static}
+  .parse-row{grid-template-columns:auto 1fr;gap:10px}
+  .parse-row .qty-input,.parse-row .ppr,.parse-row .clarify{grid-column:2}
+}
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div class="damask"></div>
+
+<!-- =========== NAV =========== -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#home" class="brand" data-route="home">
+      <span class="brand-crest">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-2 8 10-12h-6l1-8z"/></svg>
+      </span>
+      <span>
+        <span class="brand-name"><span class="np">वाग्ले इलेक्ट्रिकल्स</span>Wagle Electricals</span>
+        <span class="brand-sub">& Wagle General Suppliers · Est. 2056 BS</span>
+      </span>
+    </a>
+
+    <div class="nav-links" id="navLinks">
+      <a href="#home" class="nav-link" data-route="home">Home</a>
+      <a href="#products" class="nav-link" data-route="products">Products</a>
+      <a href="#scan" class="nav-link" data-route="scan">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10"/></svg>
+        Scan Estimate
+      </a>
+      <a href="#cart" class="nav-link" data-route="cart">
+        Cart <span class="cart-badge" id="cartBadge">0</span>
+      </a>
+      <a href="#track" class="nav-link" id="trackNavLink" data-route="track">Track Order</a>
+      <a href="#products" class="nav-cta" data-route="products">Shop Now</a>
+    </div>
+
+    <button class="hamburger" id="hamburger" aria-label="Menu"><span></span></button>
+  </div>
+</nav>
+
+<main>
+
+<!-- =========== HOME =========== -->
+<section class="view" id="view-home">
+  <div class="hero">
+    <div class="container">
+      <div class="hero-grid">
+        <div>
+          <span class="eyebrow">Est 2056. Damauli · Tanahun · Nepal</span>
+          <h1>
+            <span class="np-line">वाग्ले इलेक्ट्रिकल्स</span>
+            <span class="gold">Damauli</span><br>
+            <em>since day one.</em>
+          </h1>
+          <p class="lede">
+            From a single switch to a full home rewiring — Wagle Electricals &amp; Wagle Generals stocks the wires, fixtures, fittings, water fittings, plumbing items, finishing items, and bathroom fittings that keep our bazaar humming. Quality brands, fair prices, and a team that knows what works.
+          </p>
+          <div class="hero-ctas">
+            <button class="btn btn-primary" data-route="products">
+              Browse Products
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+            <a class="btn btn-ghost" href="tel:+9779748434921">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              Call the Shop
+            </a>
+          </div>
+          <div class="hero-meta">
+            <div>Shop hours<strong>7:30am — 6:30pm</strong></div>
+            <div>Stock items<strong>500+ SKUs</strong></div>
+            <div>Local delivery<strong>Within 5km</strong></div>
+          </div>
+        </div>
+
+        <div class="hero-vis">
+          <img src="/Shop.jpeg" alt="Wagle Electricals & General Suppliers — Damauli, Tanahun" />
+          <div class="corner c-tl">WAGLE ELECTRICALS</div>
+          <div class="corner c-tr">EST. 2056 BS</div>
+          <div class="corner c-bl">DAMAULI · TANAHUN</div>
+          <div class="corner c-br">NEPAL</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- categories -->
+  <section class="section section-emerald">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">// Shop by category · श्रेणी</span>
+          <h2><span class="np">सबै सामान</span>Everything <span class="gold">electric.</span></h2>
+        </div>
+        <p>From the smallest junction box to a full solar installation — find what your project needs.</p>
+      </div>
+      <div class="cat-grid" id="catGrid"></div>
+
+      <!-- estimate banner -->
+      <div class="feature-banner">
+        <div>
+          <span class="eyebrow">// New · AI Estimate Scanner</span>
+          <h3>Got a written <span class="gold">estimate?</span> Snap a photo.</h3>
+          <p>Hand the contractor's list to our AI. We'll read every line, match it to the catalogue, ask about anything ambiguous, and load it straight into your cart — or send it to the shop on WhatsApp.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button class="btn btn-primary" data-route="scan">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10"/></svg>
+            Try the Scanner
+          </button>
+          <button class="btn btn-ghost" id="waEstimateHomeBtn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4A11.6 11.6 0 0 0 3 19l-1 5 5-1A11.6 11.6 0 1 0 20 4z"/></svg>
+            WhatsApp the Shop
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- why -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">// Why Wagle · हाम्रो विश्वास</span>
+          <h2><span class="np">दमौलीको भरपर्दो</span>Trusted by <span class="gold">Damauli.</span></h2>
+        </div>
+        <p>A small shop with a serious approach. Here's what you get when you walk in (or order online).</p>
+      </div>
+      <div class="why-grid">
+        <div class="why">
+          <div class="why-num">01 / LOCAL</div>
+          <h3>A shop you know.</h3>
+          <p>We've served Damauli homes, contractors and electricians for years. Walk in, ask anything — we know our stock.</p>
+        </div>
+        <div class="why">
+          <div class="why-num">02 / SWIFT</div>
+          <h3>Order. Pick up. Done.</h3>
+          <p>Place an order online, get a confirmation, then collect it from the counter — or have it delivered nearby.</p>
+        </div>
+        <div class="why">
+          <div class="why-num">03 / GENUINE</div>
+          <h3>Brands you can trust.</h3>
+          <p>We stock genuine wires, MCBs, fans and lights from reputable manufacturers — never knock-offs.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- about -->
+  <section class="section section-emerald">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-text">
+          <span class="eyebrow">// Our Story · हाम्रो कथा</span>
+          <h2><span class="np" style="display:block;font-size:.6em;color:var(--gold);margin-bottom:.15em">हाम्रो बारेमा</span>A legacy built on <span class="gold">trust.</span></h2>
+          <p class="about-lead">Founded by <strong style="color:#d8cba6">Rama Poudel Wagle</strong>, our two sister stores on Bazaar Road have been serving the homes, contractors, and electricians of Damauli since <strong style="color:var(--gold)">2056 BS</strong> — over two and a half decades of reliable service across Tanahun.</p>
+          <p><strong style="color:#d8cba6">Wagle Electricals</strong> covers wiring, lighting, switches, fans, motors, chimneys, air conditioners, solar systems, MCBs, GI fittings, and all electrical accessories — stocked with trusted brands for homes and commercial projects alike.</p>
+          <p><strong style="color:#d8cba6">Wagle Generals</strong> is our companion store for water and sanitation needs: bathroom fittings, commodes, bathtubs, PPR / CPVC / PVC pipes &amp; fittings, tanks, tools, and everyday hardware supplies.</p>
+          <p>Honest pricing, genuine brands, and staff who know the trade. Walk in, ask anything — we're here.</p>
+          <div class="about-stats">
+            <div class="about-stat">
+              <div class="about-stat-num">२५+</div>
+              <div class="about-stat-lab">Years in service<br><span class="np-tag">वर्षको सेवा</span></div>
+            </div>
+            <div class="about-stat">
+              <div class="about-stat-num">२०+</div>
+              <div class="about-stat-lab">Product lines<br><span class="np-tag">उत्पादन श्रेणी</span></div>
+            </div>
+            <div class="about-stat">
+              <div class="about-stat-num">२०५६</div>
+              <div class="about-stat-lab">Est. Bikram Sambat<br><span class="np-tag">स्थापना वर्ष</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="about-card">
+          <div class="about-emblem">
+            <div class="about-bolt">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-2 8 10-12h-6l1-8z"/></svg>
+            </div>
+            <div style="text-align:center">
+              <div class="np" style="font-size:1.25em;color:var(--gold);margin-bottom:4px">वाग्ले इलेक्ट्रिकल्स</div>
+              <div style="font-size:11px;color:#9ab19d;letter-spacing:.12em;text-transform:uppercase">Est. 2056 BS · Damauli, Nepal</div>
+            </div>
+          </div>
+          <div class="about-proprietor">
+            <div class="prop-label">Proprietor · संस्थापक</div>
+            <div class="prop-np">रमा पौडेल वाग्ले</div>
+            <div class="prop-en">Rama Poudel Wagle</div>
+            <div class="prop-title">Founder &amp; Proprietor<br><span class="np-tag">संस्थापक तथा मालिक · Wagle Electricals</span></div>
+          </div>
+          <div class="about-tagline">"विद्युत, पाइप, फिटिङ — दमौलीको भरोसायोग्य साझेदार"</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- location -->
+  <section class="section section-emerald">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">// Visit the store · हाम्रो ठेगाना</span>
+          <h2><span class="np">दमौलीमा भेट्नुहोस्</span>Find us in <span class="gold">Damauli.</span></h2>
+        </div>
+        <p>Right on the bazaar road. Open Sun–Fri · <strong>Saturday closed.</strong> Follow us on Facebook for daily updates.</p>
+      </div>
+      <div class="loc-grid">
+        <div class="loc-info">
+          <span class="eyebrow">// Storefront</span>
+          <h3><span class="np" style="display:block;font-size:.55em;color:var(--gold);margin-bottom:.15em">वाग्ले इलेक्ट्रिकल्स</span>Wagle Electricals</h3>
+          <div class="loc-row"><div class="lab">Address</div><div class="val">Bazaar Road, Damauli<br>Tanahun, Gandaki Province<br>Nepal</div></div>
+          <div class="loc-row"><div class="lab">Phone</div><div class="val"><a href="tel:+9779748434921">+977 974-843-4921</a></div></div>
+          <div class="loc-row"><div class="lab">WhatsApp</div><div class="val"><a href="https://wa.me/9779748434921" target="_blank" rel="noopener">Chat with the shop →</a></div></div>
+          <div class="loc-row"><div class="lab">Hours</div><div class="val">Sun – Fri · 7:30 — 18:30<br><span style="color:var(--red);font-weight:600">Sat · Closed / बन्द</span></div></div>
+          <div class="loc-row"><div class="lab">Returns</div><div class="val"><span style="color:var(--red)">No returns on Fri &amp; Sun</span><br><span class="np" style="font-size:13px;color:var(--mute)">शुक्रवार र आइतवार सामान फिर्ता हुँदैन</span></div></div>
+          <div class="loc-row"><div class="lab">Location</div><div class="val"><a href="https://maps.app.goo.gl/4Q4gyLD1WtYrjJ6G7" target="_blank" rel="noopener">Open in Google Maps →</a></div></div>
+          <div class="loc-row"><div class="lab">Follow us</div><div class="val">
+            <a href="https://www.facebook.com/p/Wagle-Electricals-100083196947442/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;margin-bottom:4px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#1877f2"><path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.41 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.95.93-1.95 1.88v2.27h3.32l-.53 3.5h-2.79V24C19.61 23.1 24 18.1 24 12.07z"/></svg>
+              Facebook — day-to-day updates
+            </a><br>
+            <a href="https://www.tiktok.com/@wagleelectricals12" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.73a4.85 4.85 0 0 1-1.01-.04z"/></svg>
+              TikTok @wagleelectricals12
+            </a>
+          </div></div>
+        </div>
+        <div class="loc-map"><div id="homeMap"></div></div>
+      </div>
+    </div>
+  </section>
+</section>
+
+<!-- =========== PRODUCTS =========== -->
+<section class="view" id="view-products">
+  <div class="products-head">
+    <div class="container">
+      <span class="eyebrow">// Catalogue · Live stock</span>
+      <h1>The <em>parts bin.</em></h1>
+      <p>Filter by category or search by name. Tap "Add" to drop something into your cart — we'll arrange pickup or delivery at checkout.</p>
+    </div>
+  </div>
+
+  <div class="product-toolbar">
+    <div class="container product-toolbar-inner">
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="searchInput" placeholder="Search products…" />
+      </div>
+      <div class="div-filter" id="divFilter">
+        <button class="div-btn active" data-div="all">All</button>
+        <button class="div-btn" data-div="electricals">⚡ Electricals</button>
+        <button class="div-btn" data-div="generals">🔧 Generals</button>
+      </div>
+      <div class="tabs" id="tabs"></div>
+    </div>
+  </div>
+  <div class="quotation-banner container">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+    <span><strong>No prices displayed.</strong> Rates fluctuate frequently. Final pricing is confirmed by the shop — send your order via WhatsApp to receive a quotation. <span class="np-tag">मूल्य स्टोरमा पुष्टि गरिन्छ।</span></span>
+  </div>
+
+  <div class="container">
+    <div class="product-grid" id="productGrid"></div>
+    <p style="text-align:center;font-size:11px;color:var(--mute);font-family:'JetBrains Mono',monospace;letter-spacing:.04em;padding-bottom:32px;border-top:1px solid var(--line);padding-top:14px">
+      * Product images are for reference only. Actual design, size and colour may vary.
+      <span class="np" style="display:block;margin-top:4px;font-size:12px">* उत्पादनका फोटोहरू सन्दर्भका लागि मात्र हुन्। वास्तविक डिजाइन, साइज र रङ फरक हुन सक्छ।</span>
+    </p>
+  </div>
+</section>
+
+<!-- =========== SCAN ESTIMATE =========== -->
+<section class="view" id="view-scan">
+  <div class="scan-head">
+    <div class="container">
+      <span class="eyebrow">// AI Estimate Scanner</span>
+      <h1>Snap an <em>estimate.</em><br>We'll do the rest.</h1>
+      <p>Upload a photo of a written or printed estimate from a contractor or electrician. Our AI reads each line, matches it to our catalogue, and asks for clarification on anything it isn't sure about — then drops everything into your cart.</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="scan-grid">
+      <label class="scan-uploader" id="dropZone" for="fileInput">
+        <input type="file" id="fileInput" accept="image/*" />
+        <div class="icon-ring">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3.5"/><path d="M8 5l1.5-2h5L16 5"/></svg>
+        </div>
+        <h3>Add a photo of the estimate</h3>
+        <p>Drag and drop, or click to choose. JPEG, PNG, HEIC — handwritten or printed both work.</p>
+        <span class="or">— OR PASTE TEXT BELOW —</span>
+        <div class="preview">
+          <span class="badge">Scanning…</span>
+          <img id="previewImg" alt="" />
+          <div class="ovl"></div>
+          <div class="scanline"></div>
+        </div>
+      </label>
+
+      <div class="scan-tools">
+        <div>
+          <span class="eyebrow">// How it works</span>
+          <h3 style="margin-top:8px">Three quick steps.</h3>
+        </div>
+        <ul class="step-list">
+          <li><span class="num">1</span><div><strong>Upload or paste</strong><p>Photo of an estimate, or type the lines yourself if you already have them.</p></div></li>
+          <li><span class="num">2</span><div><strong>AI reads &amp; matches</strong><p>We extract item, quantity, and price; cross-check against the Wagle catalogue.</p></div></li>
+          <li><span class="num">3</span><div><strong>Confirm &amp; cart</strong><p>Anything ambiguous is highlighted — pick the right product, then send the lot to your cart.</p></div></li>
+        </ul>
+
+        <div class="scan-paste">
+          <label for="estimateText">Or paste estimate text</label>
+          <textarea id="estimateText" placeholder="e.g.&#10;2 rolls 2.5mm copper wire&#10;10 LED bulbs 9w&#10;1 ceiling fan 48 inch&#10;6 modular switches"></textarea>
+          <div class="scan-actions" style="margin-top:12px">
+            <button class="btn btn-primary" id="parseBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+              Scan with AI
+            </button>
+            <button class="btn btn-ghost" id="loadDemoBtn">Load Demo Estimate</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Parse output -->
+    <div class="parse-section" id="parseSection" style="display:none">
+      <div class="parse-card">
+        <div class="parse-head">
+          <div>
+            <h3>Parsed estimate</h3>
+            <div class="meta" id="parseMeta">— lines detected</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-ghost" id="parseAgainBtn" style="padding:9px 16px;font-size:11px">Re-scan</button>
+            <button class="btn btn-whatsapp" id="waEstimateBtn" style="padding:9px 16px;font-size:11px">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4A11.6 11.6 0 0 0 3 19l-1 5 5-1A11.6 11.6 0 1 0 20 4z"/></svg>
+              WhatsApp this Estimate
+            </button>
+          </div>
+        </div>
+        <div class="parse-list" id="parseList"></div>
+        <div class="parse-foot">
+          <div>
+            <div class="meta" id="parseSummary"></div>
+            <div class="parse-total">Estimated total: <span id="parseTotal">NPR 0</span></div>
+          </div>
+          <button class="btn btn-primary" id="addAllBtn">
+            Add Matched Items to Cart
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========== CART =========== -->
+<section class="view" id="view-cart">
+  <div class="container">
+    <div class="cart-grid">
+      <div>
+        <span class="eyebrow">// Your cart</span>
+        <h1 class="serif" style="font-size:50px;margin:6px 0 22px;font-weight:600;line-height:1">Review &amp; <em style="color:var(--gold);font-weight:500">confirm.</em></h1>
+        <div id="cartBody"></div>
+      </div>
+      <aside id="summarySide"></aside>
+    </div>
+  </div>
+</section>
+
+<!-- =========== TRACK =========== -->
+<section class="view" id="view-track">
+  <div class="track-head">
+    <div class="container">
+      <span class="eyebrow">// Order status · Live</span>
+      <h1 class="serif" style="font-size:clamp(46px,5.4vw,72px);margin:8px 0 8px;font-weight:600;line-height:1">Track your <em style="color:var(--gold);font-weight:500">order.</em></h1>
+      <p style="color:var(--ink-2);max-width:600px;margin:0;line-height:1.6">Watch your order move through every stage — from submitted to delivered.</p>
+
+      <div style="display:flex;gap:10px;margin-top:22px;max-width:480px;flex-wrap:wrap">
+        <input id="orderIdInput" type="text" placeholder="Enter Order ID  e.g. WG-AB1234"
+          style="flex:1;min-width:180px;padding:11px 16px;border:1px solid var(--line-2);border-radius:10px;background:var(--bg-3);color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;letter-spacing:.05em"
+          oninput="this.value=this.value.toUpperCase()"
+          onkeydown="if(event.key==='Enter') lookupOrder()"/>
+        <button class="btn btn-primary" style="padding:11px 20px" onclick="lookupOrder()">Look Up →</button>
+      </div>
+      <div id="lookupErr" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--red);margin-top:8px;min-height:18px"></div>
+
+      <div class="order-card" id="orderCard"></div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="stepper" id="stepper"><div class="progress" id="stepProgress" style="width:0%"></div></div>
+    <div class="stage-panel" id="stagePanel"></div>
+  </div>
+</section>
+
+</main>
+
+<!-- =========== FOOTER =========== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#home" class="brand" data-route="home">
+          <span class="brand-crest"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-2 8 10-12h-6l1-8z"/></svg></span>
+          <span><span class="brand-name">Wagle Electricals</span><span class="brand-sub">Est. 2056 BS · Damauli</span></span>
+        </a>
+        <p>Wagle Electricals &amp; Wagle General Suppliers — powering homes, shops and projects across Damauli since 2056 BS.</p>
+        <a class="btn btn-whatsapp" style="padding:11px 18px;font-size:12px" href="https://wa.me/9779748434921" target="_blank" rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4A11.6 11.6 0 0 0 3 19l-1 5 5-1A11.6 11.6 0 1 0 20 4z"/></svg>
+          WhatsApp the Shop
+        </a>
+        <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+          <a href="https://www.facebook.com/p/Wagle-Electricals-100083196947442/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-2);padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:var(--bg-2)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="#1877f2"><path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.41 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.95.93-1.95 1.88v2.27h3.32l-.53 3.5h-2.79V24C19.61 23.1 24 18.1 24 12.07z"/></svg>
+            Facebook Updates
+          </a>
+          <a href="https://www.tiktok.com/@wagleelectricals12" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-2);padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:var(--bg-2)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.73a4.85 4.85 0 0 1-1.01-.04z"/></svg>
+            TikTok
+          </a>
+        </div>
+      </div>
+      <div><h4>Shop</h4><ul>
+        <li><a href="#products" data-route="products">All Products</a></li>
+        <li><a href="#scan" data-route="scan">Scan Estimate</a></li>
+        <li><a href="#products" data-route="products">Lighting</a></li>
+        <li><a href="#products" data-route="products">Solar</a></li>
+      </ul></div>
+      <div><h4>Help</h4><ul>
+        <li id="trackFooterLink" style="display:none"><a href="#track" data-route="track">Track an Order</a></li>
+        <li><a href="#cart" data-route="cart">View Cart</a></li>
+        <li><a href="tel:+9779748434921">Call the Shop</a></li>
+        <li><a href="https://wa.me/9779748434921" target="_blank" rel="noopener">WhatsApp</a></li>
+      </ul></div>
+      <div><h4>Visit</h4><ul>
+        <li>Bazaar Road, Damauli</li>
+        <li>Tanahun, Nepal</li>
+        <li>Sun–Fri · 7:30am — 6:30pm</li>
+        <li style="color:var(--red)">Sat · Closed</li>
+        <li><a href="https://maps.app.goo.gl/4Q4gyLD1WtYrjJ6G7" target="_blank" rel="noopener">Google Maps →</a></li>
+        <li style="font-size:11px;color:var(--mute)">No returns Fri &amp; Sun</li>
+      </ul></div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2082 BS · Wagle Electricals &amp; Wagle General Suppliers · All rights reserved</span>
+      <span>Built with <span class="heart">♥</span> for Damauli</span>
+    </div>
+  </div>
+</footer>
+
+<!-- toast -->
+<div class="toast" id="toast"><span class="dot"></span><span id="toastMsg">Added to cart</span></div>
+
+<!-- placed overlay -->
+<div class="placed-overlay" id="placedOverlay">
+  <div class="placed-card">
+    <div class="check"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></div>
+    <h3>Order placed!</h3>
+    <p>Your request has been submitted to Wagle &amp; Co. The shop will review it shortly.</p>
+    <div class="id" id="placedId">WG-XXXXXX</div>
+    <div><button class="btn btn-primary" id="goTrack">View Order Status →</button></div>
+  </div>
+</div>
+
+<!-- clarify modal -->
+<div class="modal" id="clarifyModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div>
+        <span class="eyebrow">// AI needs help</span>
+        <h3 id="clarifyTitle">Which one did you mean?</h3>
+        <p id="clarifyRaw" style="margin-top:6px"></p>
+      </div>
+      <button class="x" id="clarifyClose">×</button>
+    </div>
+    <div class="modal-body" id="clarifyBody"></div>
+    <div class="modal-foot">
+      <button class="skip" id="clarifySkip">Skip this line</button>
+      <button class="btn btn-primary" id="clarifyConfirm">Use Selection</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ API CONFIGURATION ============
+const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.protocol === 'file:')
+  ? 'http://localhost:5000/api'
+  : '/api';
+
+// ============ BIKRAM SAMBAT ============
+const BS_CAL = {
+  2079:{ad:[2022,4,14],d:[31,31,32,32,31,30,30,29,30,29,30,30]},
+  2080:{ad:[2023,4,14],d:[31,31,32,32,31,30,30,29,30,29,30,30]},
+  2081:{ad:[2024,4,13],d:[31,31,32,32,31,30,30,29,30,29,30,30]},
+  2082:{ad:[2025,4,14],d:[31,31,32,32,31,30,30,29,30,29,30,30]},
+  2083:{ad:[2026,4,14],d:[31,32,31,32,31,30,30,30,29,29,30,30]},
+  2084:{ad:[2027,4,14],d:[31,32,31,32,31,30,30,30,29,30,29,31]},
+  2085:{ad:[2028,4,13],d:[31,31,32,31,31,31,30,29,30,29,30,30]},
+  2086:{ad:[2029,4,14],d:[31,31,32,31,32,30,30,29,30,29,30,30]},
+  2087:{ad:[2030,4,14],d:[31,32,31,32,31,30,30,29,30,29,30,30]},
+};
+const BS_MONTHS_EN = ['Baisakh','Jestha','Ashadh','Shrawan','Bhadra','Ashwin','Kartik','Mangsir','Poush','Magh','Falgun','Chaitra'];
+const BS_MONTHS_NP = ['वैशाख','जेठ','असार','साउन','भदौ','असोज','कार्तिक','मंसिर','पुस','माघ','फागुन','चैत'];
+function adToBS(Y,M,D){
+  const yrs=Object.keys(BS_CAL).map(Number).sort();
+  const t=new Date(Y,M-1,D);
+  for(let i=0;i<yrs.length;i++){
+    const y=yrs[i],[sy,sm,sd]=BS_CAL[y].ad;
+    const s=new Date(sy,sm-1,sd),ne=BS_CAL[yrs[i+1]];
+    const e=ne?new Date(ne.ad[0],ne.ad[1]-1,ne.ad[2]):new Date(sy+1,sm-1,sd);
+    if(t>=s&&t<e){let r=Math.round((t-s)/86400000);
+      for(let m=0;m<12;m++){if(r<BS_CAL[y].d[m])return{y,m:m+1,d:r+1};r-=BS_CAL[y].d[m];}
+    }
+  }return null;
+}
+function bsDate(val){
+  const d=new Date(typeof val==='number'?val:val);
+  const bs=adToBS(d.getFullYear(),d.getMonth()+1,d.getDate());
+  if(!bs)return '';
+  return `${bs.d} ${BS_MONTHS_NP[bs.m-1]} ${bs.y}`;
+}
+
+const apiCall = async (endpoint, method = 'GET', body = null) => {
+  try {
+    const opts = { method, headers: { 'Content-Type': 'application/json' } };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(`${API_BASE_URL}${endpoint}`, opts);
+    if (!res.ok) throw new Error(`API Error: ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.error(`API Error on ${endpoint}:`, err);
+    throw err;
+  }
+};
+
+// ============ DATA ============
+// Electricals categories
+const ELEC_CATEGORIES = [
+  {id:'wiring',    name:'Wiring & Cables',    np:'तार र केबल',         icon:'wire'},
+  {id:'lighting',  name:'Lighting',           np:'बत्ती',               icon:'led'},
+  {id:'switches',  name:'Switches & Sockets', np:'स्विच र सकेट',       icon:'switch'},
+  {id:'solar',     name:'Solar & Battery',    np:'सोलार',               icon:'solar'},
+  {id:'fans',      name:'Fans',               np:'पंखा',                icon:'fan'},
+  {id:'safety',    name:'MCB & Safety',       np:'सुरक्षा / एमसीबी',    icon:'mcb'},
+  {id:'pumps',     name:'Pumps & Motors',     np:'पम्प',                icon:'tool'},
+  {id:'appliances',name:'Appliances',         np:'उपकरण',               icon:'panel'},
+  {id:'tools',     name:'Tools',              np:'औजार',                icon:'tool'},
+  {id:'extras',    name:'Extras',             np:'अरू',                 icon:'plug'},
+];
+// Generals categories
+const GEN_CATEGORIES = [
+  {id:'faucets',   name:'Faucets & Mixers',   np:'धाराहरू',             icon:'pipe'},
+  {id:'pipes',     name:'Pipes & Fittings',   np:'पाइप',                icon:'wire'},
+  {id:'valves',    name:'Valves',             np:'भल्भ',                icon:'mcb'},
+  {id:'sanitary',  name:'Sanitary Ware',      np:'स्यानिटरी',           icon:'panel'},
+  {id:'bathroom',  name:'Bathroom',           np:'बाथरुम',              icon:'plug'},
+  {id:'fittings',  name:'Hardware & Fittings',np:'फिटिङ',               icon:'tool'},
+];
+const CATEGORIES = [...ELEC_CATEGORIES, ...GEN_CATEGORIES];
+
+const ICONS = {
+  wire:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7c4 0 4 5 8 5s4-5 8-5M3 17c4 0 4-5 8-5s4 5 8 5"/></svg>',
+  bulb:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.8 1 1.7 1 2.5v1h6v-1c0-.8.3-1.7 1-2.5A6 6 0 0 0 12 3z"/></svg>',
+  switch:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="9" r="2"/><path d="M10 15h4"/></svg>',
+  solar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>',
+  fan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"/><path d="M12 2c3 0 5 2 5 5 0 3-2 5-5 5M12 22c-3 0-5-2-5-5 0-3 2-5 5-5M2 12c0-3 2-5 5-5 3 0 5 2 5 5M22 12c0 3-2 5-5 5-3 0-5-2-5-5"/></svg>',
+  mcb:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 7h6M9 12l3 5 3-5"/></svg>',
+  tool:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 7l3-3 4 4-3 3M14 7l-9 9v4h4l9-9M14 7l4 4"/></svg>',
+  plug:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 2v6M15 2v6M6 8h12v3a6 6 0 0 1-12 0V8zM12 17v5"/></svg>',
+  panel:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>',
+  battery:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="16" height="10" rx="2"/><path d="M19 10v4M7 12h2M11 10v4M14 10v4"/></svg>',
+  led:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="6"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/></svg>',
+  pipe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M5 8h14M5 16h14M3 8v8M21 8v8"/></svg>',
+};
+const PRODUCTS = [
+  {id:'p01',name:'Copper Wire Roll 2.5mm²',brand:'Havells',cat:'wiring',price:5800,stock:'in',icon:'wire',ph:'90m flexible · ISI marked',keys:['copper','wire','2.5','2.5mm','flexible'],img:'https://cdn.moglix.com/p/0IfQl5BIoxSpB-xxlarge.jpg'},
+  {id:'p02',name:'House Wire 1.5mm² 90m',brand:'Finolex',cat:'wiring',price:4200,stock:'in',icon:'wire',ph:'PVC insulated · single core',keys:['house','wire','1.5','1.5mm'],img:'https://elecload.com/wp-content/uploads/2021/07/finolex-1mm-90mtr-fr-house-wire-red-yellow-blue-black-green.jpg'},
+  {id:'p03',name:'4-Core Armoured Cable 30m',brand:'Polycab',cat:'wiring',price:9400,stock:'low',icon:'wire',ph:'Outdoor · 30m roll',keys:['armoured','cable','4 core','outdoor'],img:'https://elecload.com/wp-content/uploads/2021/05/Untitled-design-_6_.webp'},
+  {id:'p04',name:'LED Bulb 9W Cool White',brand:'Philips',cat:'lighting',price:320,stock:'in',icon:'led',ph:'B22 base · 6500K',keys:['led','bulb','9w','9 watt','cool white','b22'],img:'https://cdn.moglix.com/p/J/8/Z/d/MINJ8ZFSI0M64-xxlarge.jpg'},
+  {id:'p05',name:'LED Tube Light 18W',brand:'Surya',cat:'lighting',price:480,stock:'in',icon:'led',ph:'4ft · daylight',keys:['led','tube','18w','tube light','4ft'],img:'https://cdn.moglix.com/p/I/O/4/d/MINIO46G5DF81-xxlarge.jpg'},
+  {id:'p06',name:'Recessed Panel Light 12W',brand:'Wipro',cat:'lighting',price:850,stock:'in',icon:'panel',ph:'Round · ceiling mount',keys:['panel','light','12w','recessed','round','ceiling'],img:'https://elecload.com/wp-content/uploads/2022/03/garnet-3w-led-slim-panel-light-500x500-1.jpg'},
+  {id:'p07',name:'Modular Switch 6A',brand:'Anchor Roma',cat:'switches',price:140,stock:'in',icon:'switch',ph:'1-way · ivory',keys:['modular','switch','6a','1 way'],img:'https://www.buildingsteps.com/images/thumbs/000/0001896_anchor-roma-6a-1-way-white-switch-21011_437.webp'},
+  {id:'p08',name:'3-Pin Socket 16A',brand:'Legrand',cat:'switches',price:240,stock:'in',icon:'switch',ph:'Heavy duty · earthed',keys:['3 pin','socket','16a','3pin'],img:'https://shiningbulb.com/wp-content/uploads/legrand-switches-shiningbulb-675555-510x510.jpg'},
+  {id:'p09',name:'Switch Plate 8 Module',brand:'GM Modular',cat:'switches',price:380,stock:'low',icon:'panel',ph:'Polycarbonate frame',keys:['switch plate','8 module','plate','frame'],img:'https://5.imimg.com/data5/ANDROID/Default/2021/3/QE/XU/UR/35531576/untitled-3-jpg-1000x1000.JPG'},
+  {id:'p10',name:'Solar Panel 165W',brand:'Luminous',cat:'solar',price:9800,stock:'in',icon:'solar',ph:'Polycrystalline · 12V',keys:['solar','panel','165w','12v','poly'],img:'https://cdn.moglix.com/p/iZIp8JlchVtQA-xxlarge.jpg'},
+  {id:'p11',name:'Solar Charge Controller 30A',brand:'Microtek',cat:'solar',price:3200,stock:'in',icon:'panel',ph:'PWM · 12/24V auto',keys:['charge controller','solar','30a','pwm'],img:'https://cms.microtek.in/upload/product/1-1721547087624.png'},
+  {id:'p12',name:'Tubular Battery 150Ah',brand:'Exide',cat:'solar',price:18500,stock:'low',icon:'battery',ph:'Deep cycle · 60-month',keys:['battery','tubular','150ah','deep cycle'],img:'https://www.exidecare.com/assets/ProductImages/home_invatubular_battery.jpg'},
+  {id:'p13',name:'Ceiling Fan 48"',brand:'Crompton',cat:'fans',price:5400,stock:'in',icon:'fan',ph:'Brown · 3-blade',keys:['ceiling','fan','48','48 inch'],img:'https://www.crompton.co.in/cdn/shop/files/HSHighspeed_Opalwhite__1angle_1.png'},
+  {id:'p14',name:'Table Fan 16"',brand:'Bajaj',cat:'fans',price:3200,stock:'in',icon:'fan',ph:'High speed · oscillating',keys:['table','fan','16','oscillating'],img:'https://www.bajajelectricals.com/cdn/shop/files/250620Esteem400mm-T_W_P-AllWhite03.jpg'},
+  {id:'p15',name:'Exhaust Fan 8"',brand:'Usha',cat:'fans',price:1850,stock:'in',icon:'fan',ph:'Kitchen / bathroom',keys:['exhaust','fan','8','kitchen','bathroom'],img:'https://ankurelectricals.com/cdn/shop/files/2_9b2e2ad0-8e1e-4e90-99ab-a8ce8eebb57e.png'},
+  {id:'p16',name:'MCB Single Pole 16A',brand:'Schneider',cat:'safety',price:340,stock:'in',icon:'mcb',ph:'C-curve · 6kA',keys:['mcb','16a','single pole','c-curve','breaker'],img:'https://shop.schneider-electric.co.in/media/catalog/product/cache/9a6ec7ecd5c0d8921678902b62f316bf/e/z/ez9f76116.jpg'},
+  {id:'p17',name:'Distribution Box 8-Way',brand:'Havells',cat:'safety',price:1450,stock:'in',icon:'mcb',ph:'Surface mount · double door',keys:['distribution','db','8 way','box','surface'],img:'https://havells.com/media/catalog/product/cache/844a913d283fe95e56e39582c5f2767b/d/r/drdpshodow08_2_.jpg'},
+  {id:'p18',name:'Voltage Stabiliser 4kVA',brand:'V-Guard',cat:'safety',price:7200,stock:'low',icon:'panel',ph:'AC / fridge protection',keys:['stabiliser','stabilizer','voltage','4kva','ac'],img:'https://www.vguard.in/uploads/product/vg-400.jpg'},
+  {id:'p19',name:'Insulated Pliers 8"',brand:'Taparia',cat:'tools',price:680,stock:'in',icon:'tool',ph:'1000V rated · combination',keys:['pliers','insulated','tool','8 inch'],img:'https://www.tapariatools.com/images/product_images/Pliers/combination_big.jpg'},
+  {id:'p20',name:'Digital Multimeter',brand:'Fluke',cat:'tools',price:4400,stock:'in',icon:'tool',ph:'AC/DC · auto-ranging',keys:['multimeter','digital','tester'],img:'https://media.fluke.com/e55511c8-92e6-46b2-b9ae-b108002dd7fa_product_slideshow_main.jpg'},
+  {id:'p21',name:'Extension Board 6-Socket',brand:'GoldMedal',cat:'extras',price:880,stock:'in',icon:'plug',ph:'2m cord · individual switch',keys:['extension','board','6 socket','strip'],img:'https://rukminim2.flixcart.com/image/480/640/xif0q/surge-protector/h/l/y/2-205100-no-goldmedal-original-imahk8c7ygvgeut5.jpeg'},
+  {id:'p22',name:'Spike Guard 4-Way',brand:'Belkin',cat:'extras',price:1450,stock:'in',icon:'plug',ph:'Surge protection · USB',keys:['spike','guard','4 way','surge'],img:'https://www.belkin.com/dw/image/v2/BGBH_PRD/on/demandware.static/-/Sites-master-product-catalog-blk/default/dwea96508f/images/hi-res/9/142213977_FUL1_F9E400_ZB.jpg'},
+];
+
+// ============ STATE ============
+const State = {
+  cart: JSON.parse(localStorage.getItem('wagle.cart') || '[]'),
+  filter: 'all',
+  division: 'all',
+  search: '',
+  delivery: 'pickup',
+  order: JSON.parse(localStorage.getItem('wagle.order') || 'null'),
+  customer: JSON.parse(localStorage.getItem('wagle.customer') || '{}'),
+  parsed: null,
+};
+const SHOP_WA = '9779748434921';
+const SHOP_TEL = '+9779748434921';
+const saveCart = () => localStorage.setItem('wagle.cart', JSON.stringify(State.cart));
+const saveOrder = () => { localStorage.setItem('wagle.order', JSON.stringify(State.order)); refreshTrackLink(); };
+const saveCust = () => localStorage.setItem('wagle.customer', JSON.stringify(State.customer));
+
+// ============ ROUTING ============
+const routes = ['home','products','scan','cart','track'];
+function go(route){
+  if(!routes.includes(route)) route = 'home';
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-'+route));
+  document.querySelectorAll('.nav-link').forEach(a => a.classList.toggle('active', a.dataset.route === route));
+  if(location.hash !== '#'+route) history.replaceState(null,'','#'+route);
+  window.scrollTo({top:0,behavior:'instant'});
+  if(route==='home')     setTimeout(initHomeMap, 100);
+  if(route==='products') renderProducts();
+  if(route==='cart')     renderCart();
+  if(route==='track')    renderTrack();
+}
+document.addEventListener('click', (e)=>{
+  const t = e.target.closest('[data-route]');
+  if(t){ e.preventDefault(); go(t.dataset.route); }
+});
+window.addEventListener('hashchange', ()=>go(location.hash.replace('#','')));
+
+// ============ TOAST ============
+let toastT;
+function toast(msg){
+  const el = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(()=>el.classList.remove('show'), 1900);
+}
+function refreshTrackLink(){
+  document.getElementById('trackNavLink').style.display = '';
+  const show = !!State.order && State.order.status !== 'rejected' && State.order.stage !== 0;
+  document.getElementById('trackFooterLink').style.display = show ? '' : 'none';
+}
+
+function refreshBadge(){
+  const n = State.cart.reduce((s,i)=>s+i.qty,0);
+  document.getElementById('cartBadge').textContent = n;
+}
+
+// ============ HOME ============
+function renderCategories(){
+  const counts = {};
+  PRODUCTS.forEach(p=>counts[p.cat]=(counts[p.cat]||0)+1);
+  document.getElementById('catGrid').innerHTML = CATEGORIES.map((c,i)=>`
+    <div class="cat" data-cat="${c.id}">
+      <span class="cat-num">0${i+1}</span>
+      <div class="cat-icon">${ICONS[c.icon]}</div>
+      <h3>${c.name}</h3>
+      <div class="cat-count">${counts[c.id]||0} items in stock →</div>
+    </div>
+  `).join('');
+  document.querySelectorAll('.cat').forEach(el=>el.addEventListener('click', ()=>{ State.filter = el.dataset.cat; State.search=''; go('products'); }));
+}
+let homeMapInst = null;
+function initHomeMap(){
+  if(homeMapInst){ homeMapInst.invalidateSize(); return; }
+  if(typeof L === 'undefined') return;
+  const el = document.getElementById('homeMap'); if(!el) return;
+  const damauli = [27.977073, 84.270567];
+  homeMapInst = L.map(el, {zoomControl:true, scrollWheelZoom:false}).setView(damauli, 14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'&copy; OpenStreetMap', maxZoom:19}).addTo(homeMapInst);
+  const icon = L.divIcon({className:'',
+    html:`<div style="width:38px;height:38px;border-radius:50%;background:#e6b757;display:grid;place-items:center;color:#231600;box-shadow:0 0 0 4px rgba(230,183,87,.25), 0 6px 18px rgba(0,0,0,.5);font-weight:700;border:2px solid #231600">⚡</div>`,
+    iconSize:[38,38], iconAnchor:[19,19]});
+  L.marker(damauli,{icon}).addTo(homeMapInst).bindPopup('<b>Wagle &amp; Co.</b><br>Bazaar Road, Damauli');
+}
+
+// ============ PRODUCTS ============
+function renderTabs(){
+  const divCats = State.division === 'electricals' ? ELEC_CATEGORIES
+                : State.division === 'generals'    ? GEN_CATEGORIES
+                : CATEGORIES;
+  const tabs = [{id:'all',name:'All'}, ...divCats.map(c=>({id:c.id, name:c.name}))];
+  document.getElementById('tabs').innerHTML = tabs.map(t=>`<button class="tab ${State.filter===t.id?'active':''}" data-filter="${t.id}">${t.name}</button>`).join('');
+  document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click', ()=>{ State.filter = b.dataset.filter; renderProducts(); }));
+}
+function renderProducts(){
+  renderTabs();
+  const q = (State.search||'').trim().toLowerCase();
+  let list = PRODUCTS;
+  if(State.division!=='all') list = list.filter(p=>p.division===State.division);
+  if(State.filter!=='all')   list = list.filter(p=>p.cat===State.filter);
+  if(q) list = list.filter(p=>(p.name+' '+(p.brand||'')+' '+p.ph).toLowerCase().includes(q)||
+    (p.keys||[]).some(k=>k.includes(q)));
+  const grid = document.getElementById('productGrid');
+  if(!list.length){
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">No products match your search.</div>`;
+    return;
+  }
+  grid.innerHTML = list.map(p=>`
+    <div class="product" data-id="${p.id}">
+      <div class="product-img">
+        <span class="stock ${p.stock}">${p.stock==='in'?'In Stock':'Limited'}</span>
+        ${p.img
+          ? `<img src="${p.img}" alt="${p.name}" loading="lazy"
+               style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:14px;background:#fff"
+               onerror="this.remove();document.getElementById('glyph-${p.id}').style.display='block'">`
+          : ''}
+        <div id="glyph-${p.id}" class="glyph" style="${p.img?'display:none':''}"> ${ICONS[p.icon]||ICONS.plug}</div>
+      </div>
+      <div class="product-body">
+        <div class="product-brand">${p.brand||''}</div>
+        <h3 class="product-name">${p.name}</h3>
+        <div style="font-size:11px;color:var(--mute);font-family:'JetBrains Mono',monospace">${p.division==='generals'?'Wagle Generals':'Wagle Electricals'}</div>
+        <div class="product-foot">
+          <div class="price-note">Price on quotation</div>
+          <button class="add" data-add="${p.id}">+ Add</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  document.querySelectorAll('[data-add]').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation(); addToCart(b.dataset.add); }));
+}
+const searchEl = document.getElementById('searchInput');
+if(searchEl) searchEl.addEventListener('input', e=>{ State.search = e.target.value; renderProducts(); });
+document.getElementById('divFilter')?.querySelectorAll('.div-btn').forEach(b=>b.addEventListener('click', ()=>{
+  State.division = b.dataset.div; State.filter = 'all';
+  document.querySelectorAll('.div-btn').forEach(x=>x.classList.toggle('active', x.dataset.div===State.division));
+  renderProducts();
+}));
+
+function addToCart(id, qty=1){
+  const p = PRODUCTS.find(x=>x.id===id); if(!p) return;
+  const cur = State.cart.find(i=>i.id===id);
+  if(cur) cur.qty += qty; else State.cart.push({id, qty});
+  saveCart(); refreshBadge(); toast(`${p.name} added to cart`);
+}
+function setQty(id, delta){
+  const cur = State.cart.find(i=>i.id===id); if(!cur) return;
+  cur.qty += delta;
+  if(cur.qty <= 0) State.cart = State.cart.filter(i=>i.id!==id);
+  saveCart(); refreshBadge(); renderCart();
+}
+function removeItem(id){
+  State.cart = State.cart.filter(i=>i.id!==id);
+  saveCart(); refreshBadge(); renderCart();
+}
+
+// ============ CART ============
+function cartItems(){
+  return State.cart.map(c=>{
+    const p = PRODUCTS.find(x=>x.id===c.id);
+    return p ? {...p, qty:c.qty} : null;
+  }).filter(Boolean);
+}
+function renderCart(){
+  const items = cartItems();
+  const body = document.getElementById('cartBody');
+  const side = document.getElementById('summarySide');
+  if(!items.length){
+    body.innerHTML = `<div class="cart-empty">
+      <div class="serif">Your cart is empty</div>
+      <p style="margin:0 0 18px">Add items from the catalogue, or scan an estimate.</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-primary" data-route="products">Browse Products →</button>
+        <button class="btn btn-ghost" data-route="scan">Scan an Estimate</button>
+      </div>
+    </div>`;
+    side.innerHTML = '';
+    return;
+  }
+  body.innerHTML = `<div class="cart-list">${items.map(it=>`
+    <div class="cart-item">
+      <div class="ci-img">${ICONS[it.icon]||ICONS.plug}</div>
+      <div class="ci-meta">
+        <div class="product-brand">${it.brand||''}</div>
+        <h4 class="ci-name">${it.name}</h4>
+        <div class="ci-div-tag">${it.division==='generals'?'Wagle Generals':'Wagle Electricals'}</div>
+      </div>
+      <div class="ci-side">
+        <div class="qty">
+          <button data-q="-" data-id="${it.id}">−</button>
+          <span>${it.qty}</span>
+          <button data-q="+" data-id="${it.id}">+</button>
+        </div>
+        <button class="ci-rm" data-rm="${it.id}">Remove</button>
+      </div>
+    </div>`).join('')}</div>`;
+
+  body.querySelectorAll('[data-q]').forEach(b=>b.addEventListener('click', ()=>setQty(b.dataset.id, b.dataset.q==='+'?1:-1)));
+  body.querySelectorAll('[data-rm]').forEach(b=>b.addEventListener('click', ()=>removeItem(b.dataset.rm)));
+
+  const itemCount = items.reduce((s,i)=>s+i.qty,0);
+
+  // WhatsApp message for cart (no prices — quotation requested)
+  const cartMsg = encodeURIComponent(
+    'Hello Wagle & Co. — I would like to request a quotation for the following items:\n\n' +
+    items.map(i=>`• ${i.qty} × ${i.name} (${i.brand||i.division})`).join('\n') +
+    `\n\n${State.delivery==='delivery'?'Delivery requested':'Pickup from store'}\nPlease confirm availability and pricing. Thank you!`
+  );
+
+  side.innerHTML = `<div class="summary">
+    <h3>Order Summary <span class="np-tag" style="font-size:13px">अर्डर सारांश</span></h3>
+    <div class="sum-row"><span>${itemCount} item${itemCount!==1?'s':''} in cart</span></div>
+
+    <div class="quotation-notice">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+      Prices are <strong>not displayed</strong>. The shop will confirm rates and send a formal quotation via WhatsApp after reviewing your order.
+      <span class="np-tag" style="display:block;margin-top:4px">मूल्य WhatsApp मार्फत पुष्टि हुनेछ।</span>
+    </div>
+
+    <div class="toggle-row">
+      <button data-d="pickup"   class="${State.delivery==='pickup'?'active':''}">Pickup from Store</button>
+      <button data-d="delivery" class="${State.delivery==='delivery'?'active':''}">Home Delivery</button>
+    </div>
+
+    <div id="addrBox" style="display:${State.delivery==='delivery'?'block':'none'}">
+      <div class="field"><label>Full Name</label><input id="cName" value="${State.customer.name||''}" placeholder="Ram Sharma"/></div>
+      <div class="field"><label>Phone</label><input id="cPhone" value="${State.customer.phone||''}" placeholder="98-XXXXXXXX"/></div>
+      <div class="field"><label>Area / Tole</label><input id="cArea" value="${State.customer.area||''}" placeholder="Damauli Bazaar, Ward 5"/></div>
+      <div class="field"><label>Landmark</label><input id="cLand" value="${State.customer.landmark||''}" placeholder="Near city hospital"/></div>
+    </div>
+
+    <div class="note">Payment will be arranged directly with the store after order confirmation.</div>
+
+    <button class="btn btn-primary btn-block" id="placeBtn">
+      Place Order Request
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+    <a class="btn btn-whatsapp btn-block" style="margin-top:10px" href="https://wa.me/${SHOP_WA}?text=${cartMsg}" target="_blank" rel="noopener">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4A11.6 11.6 0 0 0 3 19l-1 5 5-1A11.6 11.6 0 1 0 20 4z"/></svg>
+      WhatsApp this Cart
+    </a>
+  </div>`;
+
+  side.querySelectorAll('[data-d]').forEach(b=>b.addEventListener('click', ()=>{ State.delivery = b.dataset.d; renderCart(); }));
+  ['cName','cPhone','cArea','cLand'].forEach(id=>{
+    const el = document.getElementById(id); if(!el) return;
+    el.addEventListener('input', ()=>{
+      State.customer = {
+        name: document.getElementById('cName')?.value || '',
+        phone: document.getElementById('cPhone')?.value || '',
+        area: document.getElementById('cArea')?.value || '',
+        landmark: document.getElementById('cLand')?.value || '',
+      };
+      saveCust();
+    });
+  });
+  document.getElementById('placeBtn').addEventListener('click', placeOrder);
+}
+
+// ============ ORDER ============
+async function placeOrder(){
+  const items = cartItems(); if(!items.length) return;
+  if(State.delivery==='delivery'){
+    if(!State.customer.name || !State.customer.phone || !State.customer.area){
+      toast('Please fill in your delivery details'); return;
+    }
+  }
+
+  try {
+    const orderPayload = {
+      items: items.map(i=>({id:i.id, name:i.name, qty:i.qty})),
+      subtotal: 0,
+      delivery: State.delivery,
+      customer: State.delivery==='delivery' ? State.customer : null
+    };
+    const response = await apiCall('/orders', 'POST', orderPayload);
+    const orderId = response.orderId;
+    const tokenFormatted = response.tokenFormatted || String(response.tokenNumber || '').padStart(4, '0');
+
+    State.order = { orderId, id: orderId, ...orderPayload, stage: 1, placedAt: Date.now() };
+    saveOrder();
+    State.cart = []; saveCart(); refreshBadge();
+
+    // Build WhatsApp message (no prices — quotation requested)
+    const lines = items.map(i=>`• ${i.qty}× ${i.name} (${i.brand||i.division})`).join('\n');
+    const deliveryInfo = State.delivery==='delivery'
+      ? `\nDelivery to: ${State.customer.area}${State.customer.landmark ? ', near ' + State.customer.landmark : ''}\nName: ${State.customer.name}\nPhone: ${State.customer.phone}`
+      : '\nMethod: Store Pickup';
+    const waMsg = encodeURIComponent(
+      `🛒 *Order Request — Wagle Electricals*\nOrder ID: ${orderId}${tokenFormatted ? `\nToken: #${tokenFormatted}` : ''}\n\n${lines}${deliveryInfo}\n\nPlease confirm availability and send quotation. Thank you!`
+    );
+    window.open(`https://wa.me/${SHOP_WA}?text=${waMsg}`, '_blank');
+
+    document.getElementById('placedId').textContent = tokenFormatted ? `Token #${tokenFormatted}  ·  ${orderId}` : orderId;
+    const ov = document.getElementById('placedOverlay');
+    ov.classList.add('show');
+    document.getElementById('goTrack').onclick = ()=>{ ov.classList.remove('show'); go('track'); };
+  } catch (err) {
+    // Backend unavailable — generate ID locally and still send WhatsApp
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const orderId = 'WG-' + Array.from({length:6}, ()=>chars[Math.floor(Math.random()*chars.length)]).join('');
+    const subtotal = items.reduce((s,i)=>s+i.sub,0);
+    const fee = State.delivery==='delivery' ? 150 : 0;
+    const total = subtotal + fee;
+
+    State.order = {
+      orderId, id: orderId,
+      items: items.map(i=>({id:i.id, name:i.name, qty:i.qty})),
+      subtotal: 0, delivery: State.delivery,
+      customer: State.delivery==='delivery' ? State.customer : null,
+      stage: 1, placedAt: Date.now()
+    };
+    saveOrder();
+    State.cart = []; saveCart(); refreshBadge();
+
+    const lines = items.map(i=>`• ${i.qty}× ${i.name} (${i.brand||i.division})`).join('\n');
+    const deliveryInfo = State.delivery==='delivery'
+      ? `\nDelivery to: ${State.customer.area}\nName: ${State.customer.name}\nPhone: ${State.customer.phone}`
+      : '\nMethod: Store Pickup';
+    const waMsg = encodeURIComponent(
+      `🛒 *Order Request — Wagle Electricals*\nOrder ID: ${orderId}\n\n${lines}${deliveryInfo}\n\nPlease confirm availability and send quotation. Thank you!`
+    );
+    window.open(`https://wa.me/${SHOP_WA}?text=${waMsg}`, '_blank');
+
+    document.getElementById('placedId').textContent = orderId;
+    const ov = document.getElementById('placedOverlay');
+    ov.classList.add('show');
+    document.getElementById('goTrack').onclick = ()=>{ ov.classList.remove('show'); go('track'); };
+  }
+}
+
+// ============ TRACK ============
+
+const STAGES = [
+  {n:1, key:'submitted', label:'Submitted',  emoji:'📋',
+    title:'Order submitted',
+    msg:'Your order has been submitted successfully! We\'re waiting for the shop to review it. Please contact the store directly for expected time and payment arrangements.'},
+  {n:2, key:'accepted',  label:'Accepted',   emoji:'✅',
+    title:'Order accepted',
+    msg:'Great news — Wagle &amp; Co. has accepted your order. The team will start preparing your items shortly.'},
+  {n:3, key:'processing',label:'Processing', emoji:'📦',
+    title:'Picking your order',
+    msg:'Our staff is collecting your items from stock and packaging them for handover.'},
+  {n:4, key:'ready',     label:'Ready',      emoji:'🏪',
+    title:'Ready for pickup',
+    msg:'Your order is ready! Please visit Wagle &amp; Co. at Bazaar Road, Damauli to collect your items. Show this order ID at the counter.'},
+  {n:5, key:'enroute',   label:'Out for delivery', emoji:'🚚',
+    title:'Out for delivery',
+    msg:'Your order is on the way — our delivery rider is heading to your location. Estimated arrival in about 25 minutes.'},
+  {n:6, key:'delivered', label:'Delivered',  emoji:'🎉',
+    title:'Order delivered',
+    msg:'Order delivered! Thank you for shopping at Wagle &amp; Co. We hope to serve you again.'},
+];
+async function renderTrack(){
+  const card = document.getElementById('orderCard');
+  const stagesEl = document.getElementById('stepper');
+  const panel = document.getElementById('stagePanel');
+
+  let order = State.order;
+
+  // Fetch live order status from server if we have a saved order
+  if(order){
+    const orderId = order.id || order.orderId;
+    try {
+      const fresh = await apiCall(`/orders/${orderId}`);
+      if(fresh && !fresh.error){
+        State.order = { ...order, ...fresh };
+        saveOrder();
+        order = State.order;
+      }
+    } catch(e) { /* use cached order if server unreachable */ }
+  }
+
+  if(!order){
+    card.style.display='none';
+    stagesEl.innerHTML = '<div class="progress" style="width:0%"></div>';
+    panel.innerHTML = `<div class="empty" style="padding:30px 0">
+      <span class="eyebrow">// No active order</span>
+      <h2 class="serif" style="font-size:34px;margin:10px 0 10px;font-weight:600">Nothing to track yet.</h2>
+      <p style="color:var(--ink-2);margin-bottom:18px">Place an order from the catalogue to see live status here.</p>
+      <button class="btn btn-primary" data-route="products">Browse Products →</button>
+    </div>`;
+    return;
+  }
+
+  // Rejected order — show message and clear state
+  if(order.status === 'rejected' || order.stage === 0){
+    card.style.display='none';
+    stagesEl.innerHTML = '<div class="progress" style="width:0%"></div>';
+    panel.innerHTML = `<div class="empty" style="padding:30px 0">
+      <span class="eyebrow">// Order rejected</span>
+      <h2 class="serif" style="font-size:34px;margin:10px 0 10px;font-weight:600;color:var(--red)">Order not accepted.</h2>
+      <p style="color:var(--ink-2);margin-bottom:18px">Sorry, the shop could not fulfil this order. Please call or WhatsApp the shop for details.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="btn btn-ghost" href="tel:${SHOP_TEL}">Call Shop</a>
+        <a class="btn btn-whatsapp" href="https://wa.me/${SHOP_WA}" target="_blank">WhatsApp Shop</a>
+        <button class="btn btn-primary" data-route="products">Shop Again →</button>
+      </div>
+    </div>`;
+    return;
+  }
+  card.style.display = '';
+  const o = order;
+  const displayId = o.id || o.orderId || '—';
+  const date = new Date(o.placedAt);
+  const items = o.items.reduce((s,i)=>s+i.qty,0);
+  const isDelivery = o.delivery==='delivery';
+  card.innerHTML = `
+    <div class="col"><label>Order ID</label><div class="val gold mono" style="font-family:'JetBrains Mono',monospace;font-size:16px;letter-spacing:.06em">${displayId}</div></div>
+    <div class="col"><label>Placed</label><div class="val">${bsDate(o.placedAt)} · ${date.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div></div>
+    <div class="col"><label>Items</label><div class="val">${items} item${items>1?'s':''} · Quotation pending</div></div>
+    <div class="col"><label>Method</label><div class="val">${isDelivery?'Home Delivery':'Store Pickup'}</div></div>
+  `;
+  const visible = STAGES.filter(s=>{
+    if(s.key==='ready' && isDelivery) return false;
+    if(s.key==='enroute' && !isDelivery) return false;
+    return true;
+  });
+  let curIdx = visible.findIndex(s=>s.n===o.stage);
+  if(curIdx===-1) curIdx = Math.max(0, visible.findIndex(s=>s.n>=o.stage));
+  const total = visible.length;
+  const progressPct = total>1 ? (curIdx/(total-1))*100 : 0;
+  stagesEl.style.gridTemplateColumns = `repeat(${total},1fr)`;
+  stagesEl.innerHTML = `<div class="progress" style="width:${progressPct*0.88}%;left:6%"></div>` +
+    visible.map((s,i)=>{
+      const cls = i<curIdx?'done':(i===curIdx?'active':'');
+      return `<div class="step ${cls}">
+        <div class="dot">${i<curIdx?'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>':s.emoji}</div>
+        <div class="label">${s.label}</div>
+        <span class="stage-num">STAGE ${s.n.toString().padStart(2,'0')}</span>
+      </div>`;
+    }).join('');
+  const cur = visible[curIdx];
+  let extra = '';
+  if(cur.key==='submitted'){
+    extra = `<div class="stage-actions">
+      <a class="btn btn-ghost" href="tel:${SHOP_TEL}">Call ${SHOP_TEL}</a>
+      <a class="btn btn-whatsapp" href="https://wa.me/${SHOP_WA}" target="_blank" rel="noopener"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4A11.6 11.6 0 0 0 3 19l-1 5 5-1A11.6 11.6 0 1 0 20 4z"/></svg>WhatsApp the Shop</a>
+    </div>`;
+  }
+  if(cur.key==='enroute'){
+    extra = `<div id="trackMap"></div><div class="stage-actions" style="margin-top:14px"><span class="eyebrow">// ETA</span><span style="color:var(--ink);font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600">~25 minutes</span></div>`;
+  }
+
+  const receivedBtn = o.stage < 6
+    ? `<div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--line)">
+        <p style="font-size:13px;color:var(--mute);margin-bottom:12px">Already picked up or received your order? Tap below to confirm.</p>
+        <button class="btn btn-primary" onclick="markReceived('${o.id||o.orderId}')">
+          ✓ I've Received My Order
+          <span class="np" style="font-size:12px;font-weight:400;margin-left:4px">· सामान पाइयो</span>
+        </button>
+      </div>`
+    : '';
+
+  panel.innerHTML = `
+    <span class="eyebrow">// Stage ${cur.n.toString().padStart(2,'0')} of 06 · ${cur.label}</span>
+    <h2>${cur.title}</h2>
+    <p>${cur.msg}</p>
+    ${extra}
+    ${receivedBtn}
+  `;
+  if(cur.key==='enroute') setTimeout(initTrackMap, 80);
+}
+
+async function lookupOrder(){
+  const input = document.getElementById('orderIdInput');
+  const errEl = document.getElementById('lookupErr');
+  const id = input.value.trim().toUpperCase();
+  errEl.textContent = '';
+  if(!id){ errEl.textContent = 'Please enter an Order ID.'; return; }
+  input.disabled = true;
+  try {
+    const data = await apiCall(`/orders/${id}`);
+    if(data.error){ errEl.textContent = 'Order not found. Check the ID and try again.'; return; }
+    State.order = data;
+    saveOrder();
+    input.value = '';
+    renderTrack();
+  } catch(e){
+    errEl.textContent = 'Order not found. Check the ID and try again.';
+  } finally {
+    input.disabled = false;
+  }
+}
+
+async function markReceived(orderId){
+  if(!confirm('Confirm you have received your order?')) return;
+  try {
+    const res = await fetch(`${API_BASE_URL}/orders/${orderId}/received`, { method:'POST' });
+    const data = await res.json();
+    if(!res.ok) { toast(data.error || 'Could not update order'); return; }
+    State.order.stage = 6;
+    State.order.status = 'delivered';
+    saveOrder();
+    toast('Order marked as received. Thank you!');
+    renderTrack();
+  } catch(e) {
+    toast('Network error — try again');
+  }
+}
+
+let trackMapInst = null, trackBike = null, trackAnim = null;
+function initTrackMap(){
+  const el = document.getElementById('trackMap');
+  if(!el || typeof L==='undefined') return;
+  if(trackMapInst){ trackMapInst.remove(); trackMapInst=null; }
+  cancelAnimationFrame(trackAnim);
+  const shop = [27.977073, 84.270567];
+  const dest = [27.9712, 84.2790];
+  trackMapInst = L.map(el, {zoomControl:true, scrollWheelZoom:false}).setView([27.969, 84.273], 14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'&copy; OpenStreetMap'}).addTo(trackMapInst);
+  const shopIcon = L.divIcon({className:'',html:`<div style="width:34px;height:34px;border-radius:50%;background:#0c2118;border:2px solid #e6b757;display:grid;place-items:center;color:#e6b757;box-shadow:0 0 0 4px rgba(230,183,87,.2)">⚡</div>`,iconSize:[34,34], iconAnchor:[17,17]});
+  const destIcon = L.divIcon({className:'',html:`<div style="width:34px;height:34px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);background:#3ec591;display:grid;place-items:center;color:#062d1a;box-shadow:0 6px 16px rgba(0,0,0,.4)"><span style="transform:rotate(45deg)">🏠</span></div>`,iconSize:[34,34], iconAnchor:[17,30]});
+  const bikeIcon = L.divIcon({className:'',html:`<div style="width:42px;height:42px;border-radius:50%;background:#e89255;display:grid;place-items:center;font-size:20px;border:2px solid #231600;box-shadow:0 0 0 4px rgba(232,146,85,.3), 0 6px 18px rgba(0,0,0,.5)">🚚</div>`,iconSize:[42,42], iconAnchor:[21,21]});
+  L.marker(shop,{icon:shopIcon}).addTo(trackMapInst).bindPopup('Wagle & Co.');
+  L.marker(dest,{icon:destIcon}).addTo(trackMapInst).bindPopup('Delivery destination');
+  const path = [shop,[27.9678,84.2705],[27.9695,84.2740],[27.9706,84.2768],dest];
+  L.polyline(path,{color:'#e6b757',weight:3,opacity:.7,dashArray:'6,8'}).addTo(trackMapInst);
+  trackBike = L.marker(shop,{icon:bikeIcon}).addTo(trackMapInst);
+  const duration = 18000; const start = performance.now();
+  function lerp(a,b,k){return a+(b-a)*k}
+  function pointAt(prog){
+    const segs = path.length-1; const x = prog*segs;
+    const i = Math.min(Math.floor(x), segs-1); const k = x-i;
+    return [lerp(path[i][0],path[i+1][0],k), lerp(path[i][1],path[i+1][1],k)];
+  }
+  function tick(now){ const prog = ((now-start)%duration)/duration; trackBike && trackBike.setLatLng(pointAt(prog)); trackAnim = requestAnimationFrame(tick); }
+  trackAnim = requestAnimationFrame(tick);
+  setTimeout(()=>trackMapInst && trackMapInst.invalidateSize(), 200);
+}
+
+// ============ SCAN ESTIMATE ============
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const previewImg = document.getElementById('previewImg');
+const estimateText = document.getElementById('estimateText');
+const parseSection = document.getElementById('parseSection');
+const parseList = document.getElementById('parseList');
+
+function showPreview(file){
+  const r = new FileReader();
+  r.onload = e => { previewImg.src = e.target.result; dropZone.classList.add('has-img'); };
+  r.readAsDataURL(file);
+}
+
+dropZone.addEventListener('dragover', e=>{ e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', ()=>dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e=>{
+  e.preventDefault(); dropZone.classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if(f && f.type.startsWith('image/')){ showPreview(f); }
+});
+fileInput.addEventListener('change', e=>{
+  const f = e.target.files[0];
+  if(f && f.type.startsWith('image/')) showPreview(f);
+});
+
+document.getElementById('loadDemoBtn').addEventListener('click', ()=>{
+  estimateText.value = `2 rolls 2.5mm copper wire
+10 led bulbs 9w cool white
+1 ceiling fan 48"
+6 modular switches
+2 16amp mcb single pole
+1 distribution box 8 way
+4 led tube light 18w
+1 voltage stabilizer 4kva
+3 extension board 6 socket
+1 bigger socket plate (8 modul)`;
+});
+
+document.getElementById('parseBtn').addEventListener('click', runParse);
+document.getElementById('parseAgainBtn')?.addEventListener('click', runParse);
+
+// fuzzy matcher: returns [{score, product}]
+function matchProduct(line){
+  const text = line.toLowerCase();
+  const tokens = text.split(/[^a-z0-9.]+/).filter(Boolean);
+  return PRODUCTS.map(p=>{
+    let score = 0;
+    const hay = (p.name+' '+p.brand+' '+p.ph+' '+(p.keys||[]).join(' ')).toLowerCase();
+    for(const t of tokens){
+      if(t.length<2) continue;
+      if(hay.includes(t)) score += t.length>=4 ? 3 : 2;
+    }
+    // boost if any keyword exact-match
+    (p.keys||[]).forEach(k=>{ if(text.includes(k)) score += k.length>=4 ? 3 : 2; });
+    return {score, product:p};
+  }).sort((a,b)=>b.score-a.score);
+}
+
+function extractQty(line){
+  // patterns: "2 rolls", "x4", "qty 3", numeric prefix
+  const m = line.match(/^\s*(\d+)\b/) || line.match(/\bx\s*(\d+)\b/i) || line.match(/\bqty\s*(\d+)\b/i);
+  return m ? parseInt(m[1],10) : 1;
+}
+
+async function compressImage(file, maxSide = 1024, quality = 0.75){
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(blob => resolve(new File([blob], 'estimate.jpg', {type:'image/jpeg'})), 'image/jpeg', quality);
+    };
+    img.src = url;
+  });
+}
+
+async function runParse(){
+  let text = (estimateText.value||'').trim();
+
+  // If an image is loaded but no text, send to Groq Vision backend
+  if(!text && fileInput.files[0]){
+    parseSection.style.display = 'block';
+    parseList.innerHTML = `<div style="padding:30px;text-align:center;color:var(--mute);font-family:'JetBrains Mono',monospace;font-size:13px">// Compressing & sending to AI…</div>`;
+    document.getElementById('parseMeta').textContent = 'Reading image…';
+    parseSection.scrollIntoView({behavior:'smooth', block:'start'});
+    try {
+      const compressed = await compressImage(fileInput.files[0]);
+      const fd = new FormData();
+      fd.append('image', compressed);
+      const resp = await fetch(`${API_BASE_URL}/scan-estimate`, { method:'POST', body:fd });
+      const json = await resp.json();
+      if(json.items?.length){
+        text = json.items.map(it => `${it.qty} ${it.item}`).join('\n');
+        estimateText.value = text;
+      } else {
+        toast('AI could not extract items from image. Try pasting the text instead.');
+        return;
+      }
+    } catch(err){
+      toast('Image scan failed — paste the estimate text manually.');
+      return;
+    }
+  }
+
+  if(!text){ toast('Add a photo or paste estimate text first'); return; }
+
+  // animate: show parsing
+  parseSection.style.display = 'block';
+  parseList.innerHTML = `<div style="padding:30px;text-align:center;color:var(--mute);font-family:'JetBrains Mono',monospace;font-size:13px">// AI scanning estimate…</div>`;
+  document.getElementById('parseMeta').textContent = 'Reading…';
+  document.getElementById('parseTotal').textContent = 'NPR —';
+  document.getElementById('parseSummary').textContent = '';
+  parseSection.scrollIntoView({behavior:'smooth', block:'start'});
+
+  await new Promise(r=>setTimeout(r, 200));
+
+  const lines = text.split(/\n+/).map(s=>s.trim()).filter(Boolean);
+  const parsed = lines.map((raw, idx)=>{
+    const qty = extractQty(raw);
+    const ranks = matchProduct(raw);
+    const top = ranks[0];
+    const second = ranks[1];
+    let status='miss', product=null, suggestions=ranks.slice(0,4).map(r=>r.product);
+    if(top && top.score >= 6 && (!second || top.score - second.score >= 3)){
+      status='match'; product = top.product;
+    } else if(top && top.score >= 3){
+      status='ambig'; product = top.product;
+    } else {
+      status='miss';
+    }
+    return {idx, raw, qty, status, product, suggestions};
+  });
+
+  State.parsed = parsed;
+  renderParseList();
+}
+
+function renderParseList(){
+  const parsed = State.parsed || [];
+  const matched = parsed.filter(p=>p.status==='match').length;
+  const ambig = parsed.filter(p=>p.status==='ambig').length;
+  const missed = parsed.filter(p=>p.status==='miss').length;
+
+  document.getElementById('parseMeta').textContent =
+    `${parsed.length} lines · ${matched} matched · ${ambig} need review · ${missed} unknown`;
+
+  const total = parsed.reduce((s,p)=> p.product ? s + p.product.price * p.qty : s, 0);
+  document.getElementById('parseTotal').textContent = `${matched + ambig} matched`;
+  document.getElementById('parseSummary').textContent = matched + ambig
+    ? `${matched + ambig} item(s) ready · ${missed} item(s) couldn't be found in stock`
+    : 'Nothing matched — try editing the text and re-scanning.';
+
+  parseList.innerHTML = parsed.map(p=>{
+    if(p.status==='miss'){
+      return `<div class="parse-row" data-idx="${p.idx}">
+        <div class="parse-status miss">?</div>
+        <div class="parse-line"><div class="raw">${p.raw}</div><div class="matched" style="color:var(--mute);font-style:italic">No matching product in stock</div></div>
+        <div></div><div></div>
+        <button class="clarify" data-clarify="${p.idx}">Pick manually</button>
+      </div>`;
+    }
+    const isAmbig = p.status==='ambig';
+    return `<div class="parse-row" data-idx="${p.idx}">
+      <div class="parse-status ${isAmbig?'ambig':'match'}">${isAmbig?'!':'✓'}</div>
+      <div class="parse-line">
+        <div class="raw">"${p.raw}"</div>
+        <div class="matched">${p.product.name}<span class="brand">${p.product.brand}</span></div>
+      </div>
+      <input class="qty-input" type="number" min="1" value="${p.qty}" data-qty="${p.idx}"/>
+      <div class="ppr" style="color:var(--mute);font-size:11px">on quotation</div>
+      ${isAmbig
+        ? `<button class="clarify" data-clarify="${p.idx}">Confirm</button>`
+        : `<button class="clarify" data-clarify="${p.idx}" style="color:var(--mute);border-color:var(--line)">Change</button>`}
+    </div>`;
+  }).join('');
+
+  parseList.querySelectorAll('[data-clarify]').forEach(b=>b.addEventListener('click', ()=>openClarify(+b.dataset.clarify)));
+  parseList.querySelectorAll('[data-qty]').forEach(inp=>inp.addEventListener('input', ()=>{
+    const idx = +inp.dataset.qty;
+    const it = State.parsed.find(p=>p.idx===idx); if(!it) return;
+    it.qty = Math.max(1, parseInt(inp.value||'1',10));
+    renderParseList();
+  }));
+}
+
+document.getElementById('addAllBtn')?.addEventListener('click', ()=>{
+  if(!State.parsed) return;
+  let added = 0;
+  State.parsed.filter(p=>p.product).forEach(p=>{
+    addToCartSilent(p.product.id, p.qty); added += p.qty;
+  });
+  refreshBadge();
+  toast(`${added} item(s) added to cart`);
+  setTimeout(()=>go('cart'), 700);
+});
+function addToCartSilent(id, qty){
+  const cur = State.cart.find(i=>i.id===id);
+  if(cur) cur.qty += qty; else State.cart.push({id, qty});
+  saveCart();
+}
+
+// ===== CLARIFY MODAL =====
+const modal = document.getElementById('clarifyModal');
+let clarifyIdx = null, clarifySelected = null;
+function openClarify(idx){
+  const p = State.parsed.find(x=>x.idx===idx); if(!p) return;
+  clarifyIdx = idx;
+  clarifySelected = p.product?.id || null;
+  document.getElementById('clarifyTitle').textContent = p.status==='miss' ? 'Help us find the right product' : 'Which one did you mean?';
+  document.getElementById('clarifyRaw').textContent = `From your estimate: "${p.raw}"`;
+
+  // suggestions: top 4 + a few extras from same category if missed
+  let opts = p.suggestions.slice(0, 5);
+  if(p.status==='miss') opts = PRODUCTS.slice(0, 6);
+  document.getElementById('clarifyBody').innerHTML = opts.map(prod=>`
+    <div class="suggestion ${prod.id===clarifySelected?'selected':''}" data-pid="${prod.id}">
+      <div class="sg-img">${ICONS[prod.icon]}</div>
+      <div class="sg-meta"><div class="nm">${prod.name}</div><div class="br">${prod.brand} · ${prod.ph}</div></div>
+      <div class="sg-pr">NPR ${prod.price.toLocaleString('en-IN')}</div>
+    </div>`).join('');
+  document.querySelectorAll('#clarifyBody .suggestion').forEach(el=>el.addEventListener('click', ()=>{
+    clarifySelected = el.dataset.pid;
+    document.querySelectorAll('#clarifyBody .suggestion').forEach(s=>s.classList.toggle('selected', s.dataset.pid===clarifySelected));
+  }));
+  modal.classList.add('show');
+}
+document.getElementById('clarifyClose').addEventListener('click', ()=>modal.classList.remove('show'));
+document.getElementById('clarifySkip').addEventListener('click', ()=>{
+  const p = State.parsed.find(x=>x.idx===clarifyIdx); if(p){ p.product=null; p.status='miss'; }
+  modal.classList.remove('show'); renderParseList();
+});
+document.getElementById('clarifyConfirm').addEventListener('click', ()=>{
+  const prod = PRODUCTS.find(x=>x.id===clarifySelected); if(!prod){ modal.classList.remove('show'); return; }
+  const p = State.parsed.find(x=>x.idx===clarifyIdx);
+  if(p){ p.product = prod; p.status='match'; }
+  modal.classList.remove('show'); renderParseList();
+});
+
+// WhatsApp the estimate (parsed list)
+document.getElementById('waEstimateBtn')?.addEventListener('click', ()=>{
+  const parsed = State.parsed || [];
+  if(!parsed.length){ toast('Scan an estimate first'); return; }
+  const lines = parsed.map(p=>{
+    if(p.product) return `• ${p.qty} × ${p.product.name}`;
+    return `• ${p.raw}  ⚠ not found`;
+  }).join('\n');
+  const msg = encodeURIComponent(
+    `Hello Wagle & Co. — please quote me for the following estimate:\n\n${lines}\n\nPlease confirm availability and send pricing. Thank you!`
+  );
+  window.open(`https://wa.me/${SHOP_WA}?text=${msg}`, '_blank');
+});
+
+// home banner WA button
+document.getElementById('waEstimateHomeBtn')?.addEventListener('click', ()=>{
+  window.open(`https://wa.me/${SHOP_WA}?text=${encodeURIComponent('Hello Wagle & Co., I would like a quote — I will share my estimate here.')}`, '_blank');
+});
+
+// ============ DEV PANEL ============
+function buildDevPanel(){
+  const wrap = document.createElement('div');
+  wrap.className = 'dev-panel hide'; wrap.id = 'devPanel';
+  wrap.innerHTML = `
+    <button class="x" id="devClose">×</button>
+    <header>SIMULATE STATUS</header>
+    ${STAGES.map(s=>`<button data-s="${s.n}">${s.n}. ${s.label}</button>`).join('')}
+    <button data-reset style="border-color:var(--red);color:var(--red)">Reset / clear order</button>
+  `;
+  document.body.appendChild(wrap);
+  const toggle = document.createElement('button');
+  toggle.className = 'dev-toggle'; toggle.id = 'devToggle'; toggle.title='Simulate Status';
+  toggle.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-2 8 10-12h-6l1-8z"/></svg>';
+  document.body.appendChild(toggle);
+  toggle.addEventListener('click', ()=>{ wrap.classList.remove('hide'); toggle.style.display='none'; });
+  document.getElementById('devClose').addEventListener('click', ()=>{ wrap.classList.add('hide'); toggle.style.display='grid'; });
+  wrap.querySelectorAll('[data-s]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      if(!State.order){
+        State.order = {
+          id:'WG-DEMO01', placedAt:Date.now(),
+          items:[{id:'p04',name:'LED Bulb 9W Cool White',qty:4,price:320},{id:'p07',name:'Modular Switch 6A',qty:2,price:140}],
+          subtotal:1560, delivery:'delivery',
+          customer:{name:'Demo Customer',phone:'98-00000000',area:'Damauli Bazaar',landmark:'Near hospital'},
+          stage:1
+        };
+      }
+      State.order.stage = +b.dataset.s; saveOrder(); go('track');
+    });
+  });
+  wrap.querySelector('[data-reset]').addEventListener('click', ()=>{ State.order=null; localStorage.removeItem('wagle.order'); refreshTrackLink(); go('home'); });
+}
+
+// ============ HAMBURGER ============
+document.getElementById('hamburger').addEventListener('click', ()=>document.getElementById('navLinks').classList.toggle('open'));
+document.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click', ()=>document.getElementById('navLinks').classList.remove('open')));
+
+// ============ INIT ============
+async function init(){
+  try {
+    // Fetch products from backend, fallback to hardcoded
+    const products = await apiCall('/products');
+    // Update the global PRODUCTS array with backend data
+    if (Array.isArray(products) && products.length > 0) {
+      PRODUCTS.splice(0, PRODUCTS.length, ...products);
+    }
+  } catch (err) {
+    console.warn('Using fallback products (backend unavailable):', err.message);
+  }
+  
+  renderCategories(); refreshBadge(); refreshTrackLink(); buildDevPanel();
+  go((location.hash||'#home').replace('#',''));
+}
+init();
+</script>
+</body>
+</html>
