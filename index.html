@@ -1836,11 +1836,12 @@ async function runParse(){
         body: JSON.stringify({ imageBase64: base64, mimeType: 'image/jpeg' })
       });
       const json = await resp.json();
+      console.log('scan-estimate response:', resp.status, json);
       if(json.items?.length){
         text = json.items.map(it => `${it.qty} ${it.item}`).join('\n');
         estimateText.value = text;
       } else {
-        toast('AI could not extract items from image. Try pasting the text instead.');
+        toast(json.error ? `Scan error: ${json.error}` : 'AI could not extract items from image. Try pasting the text instead.');
         return;
       }
     } catch(err){
