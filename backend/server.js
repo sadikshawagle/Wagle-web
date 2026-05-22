@@ -13,7 +13,7 @@ dotenv.config();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 app.use(cors({ origin: '*' }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 * 1024 * 1024 } });
@@ -377,7 +377,7 @@ app.get('/api/admin/orders', async (req, res) => {
   }
 });
 
-app.post('/api/scan-estimate', upload.single('image'), async (req, res) => {
+app.post('/api/scan-estimate', async (req, res) => {
   if (!groq) {
     return res.status(503).json({ error: 'GROQ_API_KEY not configured in .env' });
   }
@@ -392,9 +392,9 @@ Rules:
 
   try {
     let messages;
-    if (req.file) {
-      const base64 = req.file.buffer.toString('base64');
-      const mediaType = req.file.mimetype.startsWith('image/') ? req.file.mimetype : 'image/jpeg';
+    if (req.body.imageBase64) {
+      const base64 = req.body.imageBase64;
+      const mediaType = req.body.mimeType || 'image/jpeg';
       messages = [{
         role: 'user',
         content: [
